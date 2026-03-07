@@ -76,6 +76,6 @@ form.feedback.saved=Saved. You earned {entries} raffle entrie(s).
 form.feedback.saveFailed=Could not save submission. Configure storage-config.txt for Supabase or use local fallback.
 
 history.title=Recent LanguaGeo Answers
-history.description=Last 10 submissions are shown below.
+history.description=All submissions from the last 60 minutes are shown below.
 history.noRecords=No saved records yet.
 history.loadFailed=Could not load recent records.

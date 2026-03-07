@@ -1,5 +1,6 @@
-﻿# Format: fieldId=answer1|answer2|answer3
+# Format: fieldId=answer1|answer2|answer3
 # Matching is non-case-sensitive and punctuation-tolerant.
+# Use * as a wildcard for "contains" matching (example: nasal*).
 
 mapCountrySelection=india|republic of india
 mapLanguageAnswer=kannada
@@ -8,9 +9,9 @@ q1Field1=canada|alaska|usa|us|america
 q1Field2=tlingit|klingkit|lingit
 q1Field3=na-dene|athabaskan
 
-q2Field1=usa|hawai'i|hawaii|hawai’i|us|america
-q2Field2=olelo hawai'i|olelo hawaii|olelo hawai’i|'olelo hawai'i|’olelo hawai’i|hawaiian
+q2Field1=usa|hawai'i|hawaii|us|america
+q2Field2=olelo hawai'i|olelo hawaii|'olelo hawai'i|hawaiian
 q2Field3=austronesian|oceanic|polynesian
 
 q3Field1=alba
-q3Field2=ŋ|nasal
+q3Field2=nasal*

@@ -4,7 +4,8 @@ const CLUE_AUDIO_SRC = "./assets/audio/kannada-10s.mp3";
 const COPY_FILE_PATH = "./form-copy.txt";
 const ANSWER_KEY_FILE_PATH = "./acceptable-answers.txt";
 const STORAGE_CONFIG_FILE_PATH = "./storage-config.txt";
-const HISTORY_LIMIT = 10;
+const HISTORY_WINDOW_MINUTES = 60;
+const HISTORY_WINDOW_MS = HISTORY_WINDOW_MINUTES * 60 * 1000;
 const LOCAL_STORAGE_KEY = "wisslr_records";
 
 const DEFAULT_COPY = {
@@ -77,7 +78,7 @@ const DEFAULT_COPY = {
   "form.feedback.saved": "Saved. You earned {entries} raffle entrie(s).",
   "form.feedback.saveFailed": "Could not save submission. Configure storage-config.txt for Supabase or use local fallback.",
   "history.title": "Recent LanguaGeo Answers",
-  "history.description": "Last 10 submissions are shown below.",
+  "history.description": "All submissions from the last 60 minutes are shown below.",
   "history.noRecords": "No saved records yet.",
   "history.loadFailed": "Could not load recent records.",
 };
@@ -91,7 +92,7 @@ const DEFAULT_ANSWER_KEY = {
   q2Field2: ["olelo hawai'i", "olelo hawaii", "'olelo hawai'i", "hawaiian"],
   q2Field3: ["austronesian", "oceanic", "polynesian"],
   q3Field1: ["alba"],
-  q3Field2: ["\u014B", "nasal"],
+  q3Field2: ["\u014B", "nasal*"],
 };
 const DEFAULT_STORAGE_CONFIG = {
   mode: "local",
@@ -100,35 +101,10 @@ const DEFAULT_STORAGE_CONFIG = {
   supabaseTable: "wisslr_submissions",
 };
 
-const HISTORY_COLOR_PALETTE = [
-  "#e6194b", // red
-  "#3cb44b", // green
-  "#ffe119", // yellow
-  "#4363d8", // blue
-  "#f58231", // orange
-  "#911eb4", // violet
-  "#46f0f0", // cyan
-  "#f032e6", // magenta
-  "#bcf60c", // lime
-  "#fabebe", // pink
-  "#008080", // teal
-  "#e6beff", // lavender
-  "#9a6324", // brown
-  "#aaffc3", // mint
-  "#808000", // olive
-  "#ffd8b1", // apricot
-  "#000075", // navy
-  "#808080", // gray
-];
-
-function getHistoryColor(index) {
-  if (index < HISTORY_COLOR_PALETTE.length) {
-    return HISTORY_COLOR_PALETTE[index];
-  }
-
-  // Golden-angle hue spacing keeps additional colors visually distinct.
-  const hue = Math.round((index * 137.508) % 360);
-  return `hsl(${hue} 82% 52%)`;
+function getHistoryShade(guessCount, maxGuessCount) {
+  const intensity = maxGuessCount <= 1 ? 1 : (guessCount - 1) / (maxGuessCount - 1);
+  const lightness = Math.round(76 - intensity * 42);
+  return `hsl(268 70% ${lightness}%)`;
 }
 
 const state = {
@@ -142,6 +118,7 @@ const state = {
   countryLayer: null,
   historyMap: null,
   historyLayer: null,
+  historyCountLayer: null,
   clueAudio: null,
   geojsonData: null,
   copy: { ...DEFAULT_COPY },
@@ -168,7 +145,6 @@ const elements = {
   languageGuessOutcomeInput: document.getElementById("languageGuessOutcome"),
   reviewScoreCard: document.getElementById("reviewScoreCard"),
   reviewSummary: document.getElementById("reviewSummary"),
-  historyLegend: document.getElementById("historyLegend"),
 };
 const REQUIRED_ELEMENT_KEYS = [
   "eventForm",
@@ -186,7 +162,6 @@ const REQUIRED_ELEMENT_KEYS = [
   "languageGuessOutcomeInput",
   "reviewScoreCard",
   "reviewSummary",
-  "historyLegend",
 ];
 function hasRequiredElements() {
   const missing = REQUIRED_ELEMENT_KEYS.filter((key) => !elements[key]);
@@ -282,7 +257,14 @@ async function loadAnswerKey() {
 
     const rawText = await response.text();
     const parsed = parseAnswerKeyFile(rawText);
-    state.answerKey = { ...DEFAULT_ANSWER_KEY, ...parsed };
+    const merged = { ...DEFAULT_ANSWER_KEY };
+
+    Object.entries(parsed).forEach(([key, values]) => {
+      const fallbackValues = Array.isArray(merged[key]) ? merged[key] : [];
+      merged[key] = [...new Set([...fallbackValues, ...values])];
+    });
+
+    state.answerKey = merged;
   } catch (error) {
     state.answerKey = { ...DEFAULT_ANSWER_KEY };
     console.warn("Using fallback answer key.", error);
@@ -369,6 +351,25 @@ function normalizeAnswer(value) {
     .replace(/[^\p{L}\p{N}\s]/gu, " ")
     .replace(/\s+/g, " ")
     .trim();
+}
+
+function isAcceptedAnswerMatch(submittedNormalized, acceptedRaw) {
+  const acceptedText = String(acceptedRaw || "").trim();
+  if (!acceptedText) {
+    return false;
+  }
+
+  const hasWildcard = acceptedText.includes("*");
+  const normalizedAccepted = normalizeAnswer(acceptedText.replace(/\*/g, " "));
+  if (!normalizedAccepted) {
+    return false;
+  }
+
+  if (hasWildcard) {
+    return submittedNormalized.includes(normalizedAccepted);
+  }
+
+  return submittedNormalized === normalizedAccepted;
 }
 
 function setGameFeedback(text, tone = "") {
@@ -770,11 +771,22 @@ function saveRecordToLocal(record) {
   }
 }
 
-function getLocalRecords(limit = HISTORY_LIMIT) {
+function getHistoryWindowStartIso() {
+  return new Date(Date.now() - HISTORY_WINDOW_MS).toISOString();
+}
+
+function getLocalRecords() {
   try {
     const raw = localStorage.getItem(LOCAL_STORAGE_KEY);
     const existing = raw ? JSON.parse(raw) : [];
-    return existing.slice(-limit).reverse();
+    const cutoffMs = Date.now() - HISTORY_WINDOW_MS;
+
+    return existing
+      .filter((record) => {
+        const submittedAtMs = Date.parse(record?.submittedAt || "");
+        return Number.isFinite(submittedAtMs) && submittedAtMs >= cutoffMs;
+      })
+      .sort((a, b) => Date.parse(b.submittedAt || 0) - Date.parse(a.submittedAt || 0));
   } catch (error) {
     console.error(error);
     return [];
@@ -818,7 +830,7 @@ async function saveSubmissionRecord(payload) {
   return saveRecordToLocal(record);
 }
 
-async function fetchRecentMapGuesses(limit = HISTORY_LIMIT) {
+async function fetchRecentMapGuesses() {
   if (
     state.storageConfig.mode === "supabase" &&
     state.storageConfig.supabaseUrl &&
@@ -826,7 +838,8 @@ async function fetchRecentMapGuesses(limit = HISTORY_LIMIT) {
   ) {
     try {
       const baseUrl = `${state.storageConfig.supabaseUrl.replace(/\/$/, "")}/rest/v1/${state.storageConfig.supabaseTable}`;
-      const query = `?select=participantName,mapCountrySelection,raffleEntries,submittedAt&order=submittedAt.desc&limit=${limit}`;
+      const windowStartIso = getHistoryWindowStartIso();
+      const query = `?select=mapCountrySelection,submittedAt&submittedAt=gte.${encodeURIComponent(windowStartIso)}&order=submittedAt.desc`;
       const response = await fetch(`${baseUrl}${query}`, {
         headers: {
           apikey: state.storageConfig.supabaseAnonKey,
@@ -847,32 +860,7 @@ async function fetchRecentMapGuesses(limit = HISTORY_LIMIT) {
     }
   }
 
-  return getLocalRecords(limit);
-}
-function renderHistoryLegend(records) {
-  elements.historyLegend.innerHTML = "";
-
-  if (!records.length) {
-    const item = document.createElement("li");
-    item.textContent = copyText("history.noRecords");
-    elements.historyLegend.appendChild(item);
-    return;
-  }
-
-  records.forEach((record, index) => {
-    const color = getHistoryColor(index);
-    const item = document.createElement("li");
-
-    const swatch = document.createElement("span");
-    swatch.className = "legend-swatch";
-    swatch.style.backgroundColor = color;
-
-    const text = document.createElement("span");
-    text.textContent = `${record.participantName || "Unknown"} - ${record.mapCountrySelection || "Unknown"}`;
-
-    item.append(swatch, text);
-    elements.historyLegend.appendChild(item);
-  });
+  return getLocalRecords();
 }
 
 async function ensureHistoryMapInitialized() {
@@ -902,51 +890,75 @@ async function renderHistoryMap(records) {
 
   try {
     const geojson = await ensureGeojsonData();
-    const countryColorMap = new Map();
+    const countryGuessCountMap = new Map();
 
-    records.forEach((record, index) => {
+    records.forEach((record) => {
       const countryName = normalizeValue(record.mapCountrySelection || "");
       if (!countryName) {
         return;
       }
 
-      if (!countryColorMap.has(countryName)) {
-        countryColorMap.set(countryName, getHistoryColor(index));
-      }
+      const currentCount = countryGuessCountMap.get(countryName) || 0;
+      countryGuessCountMap.set(countryName, currentCount + 1);
     });
+
+    const maxGuessCount = Math.max(0, ...Array.from(countryGuessCountMap.values()));
 
     if (state.historyLayer) {
       state.historyMap.removeLayer(state.historyLayer);
       state.historyLayer = null;
     }
 
+    if (state.historyCountLayer) {
+      state.historyMap.removeLayer(state.historyCountLayer);
+      state.historyCountLayer = null;
+    }
+
+    state.historyCountLayer = L.layerGroup().addTo(state.historyMap);
+
     const boundsToFit = [];
     state.historyLayer = L.geoJSON(geojson, {
       style: (feature) => {
         const name = normalizeValue(getCountryName(feature));
-        const color = countryColorMap.get(name);
+        const guessCount = countryGuessCountMap.get(name) || 0;
 
-        if (color) {
+        if (guessCount > 0) {
           return {
-            color: "#2c174f",
+            color: "#3f236e",
             weight: 1,
-            fillColor: color,
-            fillOpacity: 0.72,
+            fillColor: getHistoryShade(guessCount, maxGuessCount),
+            fillOpacity: 0.84,
           };
         }
 
         return {
-          color: "#6a5895",
+          color: "#7b6a9f",
           weight: 0.8,
-          fillColor: "#ddd2f8",
-          fillOpacity: 0.46,
+          fillColor: "#e6def7",
+          fillOpacity: 0.42,
         };
       },
       onEachFeature: (feature, layer) => {
         const name = normalizeValue(getCountryName(feature));
-        if (countryColorMap.has(name)) {
-          boundsToFit.push(layer.getBounds());
+        const guessCount = countryGuessCountMap.get(name) || 0;
+        if (guessCount <= 0) {
+          return;
         }
+
+        boundsToFit.push(layer.getBounds());
+
+        const center = layer.getBounds().getCenter();
+        const marker = L.marker(center, {
+          interactive: false,
+          keyboard: false,
+          icon: L.divIcon({
+            className: "history-count-marker-wrap",
+            html: `<span class="history-count-marker">${guessCount}</span>`,
+            iconSize: [28, 28],
+            iconAnchor: [14, 14],
+          }),
+        });
+        state.historyCountLayer.addLayer(marker);
       },
     }).addTo(state.historyMap);
 
@@ -966,8 +978,7 @@ async function renderHistoryMap(records) {
 }
 
 async function loadHistoryPage() {
-  const records = await fetchRecentMapGuesses(HISTORY_LIMIT);
-  renderHistoryLegend(records);
+  const records = await fetchRecentMapGuesses();
   await renderHistoryMap(records);
 }
 
@@ -1079,4 +1090,3 @@ async function initialize() {
 }
 
 initialize();
-
