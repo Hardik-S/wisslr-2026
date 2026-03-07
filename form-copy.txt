@@ -65,14 +65,13 @@ q3.field2.placeholder=Enter symbol or description
 
 review.title=Review Submission
 review.description=Final check before you submit. You cannot edit previous pages.
-review.entriesLabel=Raffle entries
-review.scoreLabel=Correct answers
+review.headerNote=Your raffle-entry total appears on the next page after submit.
 
 form.submitButton=Submit Final Answers
 form.feedback.missingName=Please enter your name before continuing.
 form.feedback.completeGuess=Submit your LanguaGeo guess before continuing.
 form.feedback.saved=Saved. You earned {entries} raffle entrie(s).
-form.feedback.saveFailed=Could not save to records.txt. Start the local server with `node server.js` and retry.
+form.feedback.saveFailed=Could not save submission. Configure storage-config.txt for Supabase or use local fallback.
 
 history.title=Recent LanguaGeo Answers
 history.description=Last 10 submissions are shown below.

@@ -3,7 +3,9 @@ const TARGET_COUNTRY = "India";
 const CLUE_AUDIO_SRC = "./assets/audio/kannada-10s.mp3";
 const COPY_FILE_PATH = "./form-copy.txt";
 const ANSWER_KEY_FILE_PATH = "./acceptable-answers.txt";
+const STORAGE_CONFIG_FILE_PATH = "./storage-config.txt";
 const HISTORY_LIMIT = 10;
+const LOCAL_STORAGE_KEY = "wisslr_records";
 
 const DEFAULT_COPY = {
   "page.documentTitle": "Wisslr Event Submission",
@@ -63,13 +65,13 @@ const DEFAULT_COPY = {
   "q3.field2.placeholder": "Enter symbol or description",
   "review.title": "Review Submission",
   "review.description": "Final check before you submit. You cannot edit previous pages.",
-  "review.entriesLabel": "Raffle entries",
-  "review.scoreLabel": "Correct answers",
+  "review.headerNote": "Your raffle-entry total appears on the next page after submit.",
+
   "form.submitButton": "Submit Final Answers",
   "form.feedback.missingName": "Please enter your name before continuing.",
   "form.feedback.completeGuess": "Submit your LanguaGeo guess before continuing.",
   "form.feedback.saved": "Saved. You earned {entries} raffle entrie(s).",
-  "form.feedback.saveFailed": "Could not save to records.txt. Start the local server with `node server.js` and retry.",
+  "form.feedback.saveFailed": "Could not save submission. Configure storage-config.txt for Supabase or use local fallback.",
   "history.title": "Recent LanguaGeo Answers",
   "history.description": "Last 10 submissions are shown below.",
   "history.noRecords": "No saved records yet.",
@@ -81,12 +83,17 @@ const DEFAULT_ANSWER_KEY = {
   mapLanguageAnswer: ["kannada"],
   q1Field1: ["canada", "alaska", "usa", "us", "america"],
   q1Field2: ["tlingit", "klingkit", "lingit"],
-  q1Field3: ["na-dene", "athabaskan"],
-  q2Field1: ["usa", "hawaii", "hawai'i", "hawai’i", "us", "america"],
-  q2Field2: ["olelo hawai'i", "olelo hawaii", "olelo hawai’i"],
+  q1Field3: ["na-dene", "athabaskan"],  q2Field1: ["usa", "hawaii", "hawai'i", "us", "america"],  q2Field2: ["olelo hawai'i", "olelo hawaii"],
   q2Field3: ["austronesian", "oceanic", "polynesian"],
   q3Field1: ["alba", "alba o.", "o. alba"],
   q3Field2: ["\u014B", "nasal"],
+};
+
+const DEFAULT_STORAGE_CONFIG = {
+  mode: "local",
+  supabaseUrl: "",
+  supabaseAnonKey: "",
+  supabaseTable: "wisslr_submissions",
 };
 
 const HISTORY_COLORS = [
@@ -119,6 +126,7 @@ const state = {
   answerKey: { ...DEFAULT_ANSWER_KEY },
   currentStepIndex: 0,
   pendingSubmission: null,
+  storageConfig: { ...DEFAULT_STORAGE_CONFIG },
 };
 
 const elements = {
@@ -173,7 +181,7 @@ function hasRequiredElements() {
 
   console.error(
     `Wisslr UI failed to initialize. ${missingMessage}${stepsMessage}` +
-      "Hard-refresh the page and restart the local server to clear stale assets."
+      "Hard-refresh the page and reload the app to clear stale assets."
   );
   return false;
 }
@@ -260,6 +268,28 @@ async function loadAnswerKey() {
   } catch (error) {
     state.answerKey = { ...DEFAULT_ANSWER_KEY };
     console.warn("Using fallback answer key.", error);
+  }
+}
+
+async function loadStorageConfig() {
+  try {
+    const response = await fetch(STORAGE_CONFIG_FILE_PATH);
+    if (!response.ok) {
+      throw new Error(`Storage config load failed (${response.status}).`);
+    }
+
+    const rawText = await response.text();
+    const parsed = parseCopyFile(rawText);
+
+    state.storageConfig = {
+      ...DEFAULT_STORAGE_CONFIG,
+      ...parsed,
+    };
+
+    state.storageConfig.mode = String(state.storageConfig.mode || "local").trim().toLowerCase();
+  } catch (error) {
+    state.storageConfig = { ...DEFAULT_STORAGE_CONFIG };
+    console.warn("Using fallback storage config.", error);
   }
 }
 
@@ -677,15 +707,11 @@ function renderReviewPage() {
   const payload = state.pendingSubmission;
 
   elements.reviewScoreCard.innerHTML = "";
-  const scoreMain = document.createElement("div");
-  scoreMain.className = "review-score-main";
-  scoreMain.textContent = `${copyText("review.entriesLabel")}: ${payload.raffleEntries}`;
+  const scoreNote = document.createElement("div");
+  scoreNote.className = "review-score-sub";
+  scoreNote.textContent = copyText("review.headerNote");
 
-  const scoreSub = document.createElement("div");
-  scoreSub.className = "review-score-sub";
-  scoreSub.textContent = `${copyText("review.scoreLabel")}: ${payload.answerScore}`;
-
-  elements.reviewScoreCard.append(scoreMain, scoreSub);
+  elements.reviewScoreCard.append(scoreNote);
 
   const rows = [
     { label: copyText("form.name.label"), value: payload.participantName, result: null },
@@ -734,20 +760,22 @@ function renderReviewPage() {
   });
 }
 
-async function saveSubmissionRecord(payload) {
+function buildStoredRecord(payload) {
+  return {
+    participantName: payload.participantName || "Unknown",
+    mapCountrySelection: payload.mapCountrySelection || "",
+    raffleEntries: Number(payload.raffleEntries || 0),
+    submittedAt: payload.submittedAt || new Date().toISOString(),
+    payload,
+  };
+}
+
+function saveRecordToLocal(record) {
   try {
-    const response = await fetch("/api/submissions", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(payload),
-    });
-
-    if (!response.ok) {
-      throw new Error(`Save failed (${response.status})`);
-    }
-
+    const raw = localStorage.getItem(LOCAL_STORAGE_KEY);
+    const existing = raw ? JSON.parse(raw) : [];
+    existing.push(record);
+    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(existing));
     return true;
   } catch (error) {
     console.error(error);
@@ -755,22 +783,85 @@ async function saveSubmissionRecord(payload) {
   }
 }
 
-async function fetchRecentMapGuesses(limit = HISTORY_LIMIT) {
+function getLocalRecords(limit = HISTORY_LIMIT) {
   try {
-    const response = await fetch(`/api/recent-map-guesses?limit=${limit}`);
-    if (!response.ok) {
-      throw new Error(`Recent map guesses failed (${response.status})`);
-    }
-
-    const data = await response.json();
-    return Array.isArray(data.records) ? data.records : [];
+    const raw = localStorage.getItem(LOCAL_STORAGE_KEY);
+    const existing = raw ? JSON.parse(raw) : [];
+    return existing.slice(-limit).reverse();
   } catch (error) {
-    console.warn(error);
-    setFormFeedbackByKey("history.loadFailed", "lose");
+    console.error(error);
     return [];
   }
 }
 
+async function saveSubmissionRecord(payload) {
+  const record = buildStoredRecord(payload);
+
+  if (
+    state.storageConfig.mode === "supabase" &&
+    state.storageConfig.supabaseUrl &&
+    state.storageConfig.supabaseAnonKey
+  ) {
+    try {
+      const response = await fetch(
+        `${state.storageConfig.supabaseUrl.replace(/\/$/, "")}/rest/v1/${state.storageConfig.supabaseTable}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            apikey: state.storageConfig.supabaseAnonKey,
+            Authorization: `Bearer ${state.storageConfig.supabaseAnonKey}`,
+            Prefer: "return=minimal",
+          },
+          body: JSON.stringify([record]),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`Supabase save failed (${response.status})`);
+      }
+
+      return true;
+    } catch (error) {
+      console.error(error);
+      return false;
+    }
+  }
+
+  return saveRecordToLocal(record);
+}
+
+async function fetchRecentMapGuesses(limit = HISTORY_LIMIT) {
+  if (
+    state.storageConfig.mode === "supabase" &&
+    state.storageConfig.supabaseUrl &&
+    state.storageConfig.supabaseAnonKey
+  ) {
+    try {
+      const baseUrl = `${state.storageConfig.supabaseUrl.replace(/\/$/, "")}/rest/v1/${state.storageConfig.supabaseTable}`;
+      const query = `?select=participantName,mapCountrySelection,raffleEntries,submittedAt&order=submittedAt.desc&limit=${limit}`;
+      const response = await fetch(`${baseUrl}${query}`, {
+        headers: {
+          apikey: state.storageConfig.supabaseAnonKey,
+          Authorization: `Bearer ${state.storageConfig.supabaseAnonKey}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`Supabase read failed (${response.status})`);
+      }
+
+      const data = await response.json();
+      return Array.isArray(data) ? data : [];
+    } catch (error) {
+      console.warn(error);
+      setFormFeedbackByKey("history.loadFailed", "lose");
+      return [];
+    }
+  }
+
+  return getLocalRecords(limit);
+}
 function renderHistoryLegend(records) {
   elements.historyLegend.innerHTML = "";
 
@@ -965,8 +1056,8 @@ async function handleSubmit(event) {
     return;
   }
 
-  setFormFeedbackByKey("form.feedback.saved", "win", { entries: payload.raffleEntries });
   showStep(6);
+  setFormFeedbackByKey("form.feedback.saved", "win", { entries: payload.raffleEntries });
 }
 
 function bindEvents() {
@@ -1006,13 +1097,14 @@ async function initialize() {
 
   await loadCopy();
   await loadAnswerKey();
+  await loadStorageConfig();
   applyCopyToDom();
   initializeAudio();
   bindEvents();
   updateGameButtons();
   syncMapGuessFields();
   setStatusByKey("game.status.waitingToStart");
-  setGameFeedbackByKey("game.feedback.mapReady", "");
+  setGameFeedback("");
   showStep(0);
 }
 

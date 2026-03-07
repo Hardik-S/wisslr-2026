@@ -20,20 +20,23 @@ Automatic non-case-sensitive matching is in:
 Format:
 - `fieldId=answer1|answer2|answer3`
 
-## Local records storage
-Submissions are appended to:
-- `records.txt`
+## Storage (GitHub Pages friendly)
+Configure:
+- `storage-config.txt`
 
-## Run locally
-Use the built-in local server (required for records saving and history map):
+Modes:
+- `mode=local` uses browser localStorage (no setup, not shared across users)
+- `mode=supabase` uses Supabase REST (shared across users)
+
+## Run locally (static)
+Use any static server:
 
 ```powershell
 cd wisslr-2026
-node server.js
+npx serve .
 ```
 
-Then open:
-- `http://127.0.0.1:3000`
+Then open the local URL shown by the server.
 
 ## Notes
 - Primary color is `#8d42f5`.

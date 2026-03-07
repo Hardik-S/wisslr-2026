@@ -1,0 +1,17 @@
+# Storage mode for GitHub Pages / static hosting
+# mode=local      -> stores submissions in browser localStorage only
+# mode=supabase   -> shared storage across users via Supabase table
+
+mode=local
+
+# Supabase settings (required only when mode=supabase)
+# Create a table (default: wisslr_submissions) with columns:
+# participantName text
+# mapCountrySelection text
+# raffleEntries int
+# submittedAt timestamptz
+# payload jsonb
+
+supabaseUrl=
+supabaseAnonKey=
+supabaseTable=wisslr_submissions
