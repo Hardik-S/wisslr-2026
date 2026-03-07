@@ -17,31 +17,31 @@ form.name.label=Full name
 form.name.placeholder=Enter your full name
 
 game.section.title=LanguaGeo
-game.section.description=Listen to the clue, select a country on the map, answer the language question, then submit your guess.
-game.startButton=Start / Retry Guess
-game.playButton=Play Audio Clue
-game.submitGuessButton=Submit LanguaGeo Guess
+game.section.description=Listen to the audio, select a country on the map, answer the language question, then submit your guess.
+game.playButton=Play Audio
+game.submitGuessButton=Submit Map Guess
 game.languageQuestionLabel=What language is it?
 game.languageQuestionPlaceholder=Enter language name
 game.mapCountryLabel=Selected Country
 game.mapAriaLabel=World map
-game.status.waitingToStart=Start LanguaGeo when you are ready.
-game.status.countrySelected={countryName} selected. Submit your LanguaGeo guess when ready.
-game.status.guessSubmitted=LanguaGeo guess submitted. Click Next to continue.
+game.status.waitingToStart=Select a country on the map, then click Submit Map Guess.
+game.status.countrySelected={countryName} selected. Click Submit Map Guess to lock it.
+game.status.mapSubmitted=Map guess submitted for {countryName}. Enter the language, then click Next.
+game.status.guessSubmitted=Language answer submitted. Click Next to continue.
 game.status.mapFailed=Map data failed to load.
 game.feedback.mapLoading=Loading map data...
-game.feedback.mapReady=Map ready. Select a country and submit your LanguaGeo guess.
+game.feedback.mapReady=Map ready. Select a country.
 game.feedback.mapError=Could not load country shapes. Refresh after checking internet access.
 game.feedback.audioError=Could not load the audio clue.
-game.feedback.audioBlocked=Audio blocked by browser autoplay policy. Click Play Audio Clue.
-game.feedback.startFirst=Start LanguaGeo first.
-game.feedback.gameStarted=LanguaGeo started. Select a country on the map.
+game.feedback.audioBlocked=Audio blocked by browser autoplay policy. Click Play Audio.
 game.feedback.countrySelected=Selected: {countryName}.
 game.feedback.selectCountryFirst=Select a country on the map first.
-game.feedback.languageRequired=Answer "What language is it?" before submitting your LanguaGeo guess.
-game.feedback.guessSaved=LanguaGeo guess saved.
+game.feedback.languageRequired=Answer "What language is it?" before continuing.
+game.feedback.guessSaved=Map guess saved.
+game.feedback.languageSaved=Language answer saved.
 
-q1.title=Phono Inventory - Physical Set 1
+q1.title=Phonological Inventory - Set 1
+q1.description=Look at the phonological inventory (Set 1) provided IRL. Put in your guesses below. Remember, each correct answer = 1 raffle entry!
 q1.field1.label=Country
 q1.field1.placeholder=Enter country
 q1.field2.label=Language
@@ -49,7 +49,8 @@ q1.field2.placeholder=Enter language
 q1.field3.label=Language Family
 q1.field3.placeholder=Enter language family
 
-q2.title=Phono Inventory - Physical Set 2
+q2.title=Phonological Inventory - Set 2
+q2.description=Look at the phonological inventory (Set 2) provided IRL. Put in your guesses below. Remember, each correct answer = 1 raffle entry!
 q2.field1.label=Country
 q2.field1.placeholder=Enter country
 q2.field2.label=Language
@@ -57,10 +58,10 @@ q2.field2.placeholder=Enter language
 q2.field3.label=Language Family
 q2.field3.placeholder=Enter language family
 
-q3.title=Scavenger Hunt
-q3.field1.label=Author's name of the 4th listed reference of the LAST presentation in the program sheet
+q3.title=WISSLR 2026 Program Sheet Scavenger Hunt
+q3.field1.label=The last name of the author of the 4th listed reference of the LAST presentation in the program sheet
 q3.field1.placeholder=Enter author name
-q3.field2.label=Which velar IPA symbol is written on page 7 of the program sheet?
+q3.field2.label=Which velar IPA symbol is written on page 7 of the program sheet? (you may enter the symbol itself or describe it)
 q3.field2.placeholder=Enter symbol or description
 
 review.title=Review Submission
@@ -69,7 +70,8 @@ review.headerNote=Your raffle-entry total appears on the next page after submit.
 
 form.submitButton=Submit Final Answers
 form.feedback.missingName=Please enter your name before continuing.
-form.feedback.completeGuess=Submit your LanguaGeo guess before continuing.
+form.feedback.completeGuess=Submit your map guess and answer "What language is it?" before continuing.
+form.feedback.submitMapGuess=Submit your map guess before continuing.
 form.feedback.saved=Saved. You earned {entries} raffle entrie(s).
 form.feedback.saveFailed=Could not save submission. Configure storage-config.txt for Supabase or use local fallback.
 
