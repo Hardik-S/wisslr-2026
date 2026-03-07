@@ -2,7 +2,7 @@
 # mode=local      -> stores submissions in browser localStorage only
 # mode=supabase   -> shared storage across users via Supabase table
 
-mode=local
+mode=supabase
 
 # Supabase settings (required only when mode=supabase)
 # Create a table (default: wisslr_submissions) with columns:
@@ -12,6 +12,6 @@ mode=local
 # submittedAt timestamptz
 # payload jsonb
 
-supabaseUrl=
-supabaseAnonKey=
+supabaseUrl=https://eyqzaekpgdciwmchrpyu.supabase.co
+supabaseAnonKey=sb_publishable_e-H4RBvOd3bRmSsABIwZkw_wMV8SWO0
 supabaseTable=wisslr_submissions
