@@ -1,32 +1,35 @@
-﻿# Country Sound Match (Prototype)
+# Wisslr Event Submission Prototype
 
-A lightweight multiplayer prototype where players hear a Kannada audio clue and click the target country on a world map.
+Single-page form prototype for event submissions.
 
-## Prototype scope
-- Map provider: Leaflet + OpenStreetMap tiles (no API key required)
-- Country boundaries: public GeoJSON from `johan/world.geo.json`
-- Audio clue: local MP3 clip in `assets/audio/kannada-10s.mp3`
-- Rule: click **India** = +1 point, any other country = 0 points
-- Multiplayer mode: local turn-based players with a live scoreboard
+## Form flow
+1. Name field
+2. Language guessing game (audio clue + map click)
+3. Question 1 with 3 text fields
+4. Question 2 with 3 text fields
+5. Final question with 1 text field
+
+## Editable text copy
+All user-facing form text is loaded from:
+- `form-copy.txt`
+
+Update values in that file to change labels, button text, instructions, and feedback messages without editing HTML/JS.
+
+## Acceptable answers template
+Starter document for answer criteria:
+- `acceptable-answers-template.txt`
 
 ## Run locally
-Serve the repo root with any static server:
+Serve the project root with any static server:
 
 ```powershell
 cd wisslr-2026
 npx serve .
 ```
 
-Then open the local URL shown in your terminal.
+Then open the local URL from your terminal.
 
-## Deploy to GitHub Pages
-1. Push this repo to GitHub.
-2. In GitHub, open `Settings -> Pages`.
-3. Under `Build and deployment`, choose `Deploy from a branch`.
-4. Select branch `main` and folder `/ (root)`.
-5. Save and wait for the Pages URL.
-
-## Audio attribution
-The Kannada clip is a 10-second derivative from the Nithya Kannada audio collection.
-See `assets/audio/ATTRIBUTION.md` for source, author, and license details.
-
+## Notes
+- Language game target country is currently fixed to India.
+- Audio clue is loaded from `assets/audio/kannada-10s.mp3`.
+- Country boundaries are loaded from `johan/world.geo.json`.

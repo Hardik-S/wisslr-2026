@@ -1,4 +1,4 @@
-﻿@import url("https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=IBM+Plex+Mono:wght@500&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=IBM+Plex+Mono:wght@500&display=swap");
 
 :root {
   --bg-0: #091628;
@@ -62,12 +62,13 @@ body {
 .layout {
   display: grid;
   gap: 16px;
-  grid-template-columns: minmax(280px, 340px) 1fr;
+  grid-template-columns: minmax(320px, 460px) 1fr;
   align-items: stretch;
 }
 
 .panel,
-.map-wrap {
+.map-wrap,
+.submission-preview {
   background: var(--card);
   border-radius: 16px;
   border: 1px solid rgba(255, 255, 255, 0.65);
@@ -78,17 +79,40 @@ body {
   padding: 18px;
   display: grid;
   gap: 18px;
+  align-content: start;
 }
 
-.panel h2 {
-  margin: 0 0 10px;
+.form-section {
+  display: grid;
+  gap: 10px;
+}
+
+.panel h2,
+.submission-preview h2 {
+  margin: 0;
   font-size: 1rem;
 }
 
-.row {
+.section-note {
+  margin: 0;
+  color: #334a67;
+  font-size: 0.95rem;
+}
+
+.field-grid {
   display: grid;
-  gap: 8px;
-  grid-template-columns: 1fr auto;
+  gap: 10px;
+}
+
+.field-group {
+  display: grid;
+  gap: 6px;
+}
+
+label {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #233851;
 }
 
 input,
@@ -113,6 +137,10 @@ button {
   font-weight: 600;
 }
 
+.submit-button {
+  background: linear-gradient(135deg, var(--accent-2), #0b7d71);
+}
+
 button:disabled {
   opacity: 0.55;
   cursor: not-allowed;
@@ -128,13 +156,13 @@ button:hover:not(:disabled) {
 }
 
 .status {
-  margin: 10px 0 0;
+  margin: 2px 0 0;
   font-weight: 500;
 }
 
 .feedback {
   min-height: 24px;
-  margin: 8px 0 0;
+  margin: 0;
 }
 
 .feedback.win {
@@ -145,49 +173,35 @@ button:hover:not(:disabled) {
   color: var(--lose);
 }
 
-.scoreboard {
-  list-style: none;
-  margin: 12px 0 0;
-  padding: 0;
-  display: grid;
-  gap: 6px;
-}
-
-.scoreboard li {
-  border: 1px solid var(--line);
-  border-radius: 10px;
-  padding: 8px 10px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background: #fff;
-}
-
-.scoreboard li.active {
-  border-color: var(--accent-2);
-  box-shadow: 0 0 0 2px rgba(15, 157, 141, 0.2);
-}
-
-.score-label {
-  font-family: "IBM Plex Mono", "Cascadia Code", monospace;
-  color: #334a67;
+.map-wrap {
+  padding: 10px;
 }
 
 #map {
   height: 68vh;
-  min-height: 460px;
-  border-radius: 16px;
+  min-height: 560px;
+  border-radius: 12px;
 }
 
-.sr-only {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  margin: -1px;
-  padding: 0;
-  border: 0;
-  clip: rect(0, 0, 0, 0);
-  overflow: hidden;
+.submission-preview {
+  padding: 18px;
+  display: grid;
+  gap: 10px;
+}
+
+#submissionOutput {
+  margin: 0;
+  min-height: 130px;
+  background: #0f1f34;
+  color: #f3f7ff;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  padding: 12px;
+  overflow: auto;
+  font-family: "IBM Plex Mono", "Cascadia Code", monospace;
+  font-size: 0.84rem;
+  line-height: 1.45;
+  white-space: pre-wrap;
 }
 
 @media (max-width: 920px) {

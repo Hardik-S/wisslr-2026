@@ -1,0 +1,14 @@
+WISSLR ACCEPTABLE ANSWERS TEMPLATE
+
+Question 1
+- Field 1 acceptable answers:
+- Field 2 acceptable answers:
+- Field 3 acceptable answers:
+
+Question 2
+- Field 1 acceptable answers:
+- Field 2 acceptable answers:
+- Field 3 acceptable answers:
+
+Final Question
+- Acceptable answers:

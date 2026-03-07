@@ -1,0 +1,59 @@
+# Edit the values on the right side of '=' to change all form text.
+# Lines starting with # are comments.
+# Use \n for line breaks inside a value.
+
+page.documentTitle=Wisslr Event Submission
+page.eyebrow=Wisslr
+page.title=Event Submission Form
+page.description=Complete all sections below, then submit.
+
+form.name.title=Participant
+form.name.label=Full name
+form.name.placeholder=Enter your full name
+
+game.section.title=Language Guessing Game
+game.section.description=Listen to the clue and click the country where the language is spoken.
+game.startButton=Start / Retry Guess
+game.playButton=Play Audio Clue
+game.mapAriaLabel=World map
+game.status.waitingToStart=Start the language game when you are ready.
+game.status.playAndGuess=Play the clue and click the matching country.
+game.status.guessRecorded=Guess recorded. Continue to the remaining questions.
+game.status.mapFailed=Map data failed to load.
+game.feedback.mapLoading=Loading map data...
+game.feedback.mapReady=Map ready. Start the language game when ready.
+game.feedback.mapError=Could not load country shapes. Refresh after checking internet access.
+game.feedback.audioError=Could not load the audio clue.
+game.feedback.audioBlocked=Audio blocked by browser autoplay policy. Click Play Audio Clue.
+game.feedback.startFirst=Start the language game first.
+game.feedback.gameStarted=Game started. Listen to the clue and select a country.
+game.feedback.correct=Correct. {targetCountry} selected.
+game.feedback.incorrect={countryName} is not {targetCountry}.
+
+q1.title=Question 1
+q1.field1.label=Field 1
+q1.field1.placeholder=Enter response for Question 1, Field 1
+q1.field2.label=Field 2
+q1.field2.placeholder=Enter response for Question 1, Field 2
+q1.field3.label=Field 3
+q1.field3.placeholder=Enter response for Question 1, Field 3
+
+q2.title=Question 2
+q2.field1.label=Field 1
+q2.field1.placeholder=Enter response for Question 2, Field 1
+q2.field2.label=Field 2
+q2.field2.placeholder=Enter response for Question 2, Field 2
+q2.field3.label=Field 3
+q2.field3.placeholder=Enter response for Question 2, Field 3
+
+q3.title=Final Question
+q3.field1.label=Response
+q3.field1.placeholder=Enter your final response
+
+form.submitButton=Submit Form
+form.preview.title=Latest Submission Preview
+form.preview.empty=No submission yet.
+form.feedback.missingName=Please enter your name before submitting.
+form.feedback.completeGuess=Please complete the language guessing game before submitting.
+form.feedback.submitted=Submission captured locally. Connect this payload to your backend endpoint.
+form.status.submitted=Submission recorded.

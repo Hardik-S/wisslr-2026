@@ -1,9 +1,9 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Country Sound Match - Prototype</title>
+    <title>Wisslr Event Submission</title>
     <link
       rel="stylesheet"
       href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
@@ -15,41 +15,97 @@
   <body>
     <div class="page">
       <header class="hero">
-        <p class="eyebrow">Prototype</p>
-        <h1>Country Sound Match</h1>
-        <p>
-          Hear the Kannada audio clip, then click the right country on the map. For this first prototype, the target country is always <strong>India</strong>.
-        </p>
+        <p class="eyebrow" data-copy-key="page.eyebrow"></p>
+        <h1 data-copy-key="page.title"></h1>
+        <p data-copy-key="page.description"></p>
       </header>
 
       <main class="layout">
-        <aside class="panel">
-          <section>
-            <h2>Players</h2>
-            <div class="row">
-              <label class="sr-only" for="playerName">Player name</label>
-              <input id="playerName" type="text" placeholder="Enter player name" maxlength="24" />
-              <button id="addPlayerButton" type="button">Add</button>
+        <form id="eventForm" class="panel" novalidate>
+          <section class="form-section">
+            <h2 data-copy-key="form.name.title"></h2>
+            <div class="field-group">
+              <label for="participantName" data-copy-key="form.name.label"></label>
+              <input
+                id="participantName"
+                name="participantName"
+                type="text"
+                maxlength="80"
+                required
+                data-copy-placeholder="form.name.placeholder"
+              />
             </div>
-            <ul id="playerList" class="scoreboard"></ul>
           </section>
 
-          <section>
-            <h2>Game</h2>
+          <section class="form-section">
+            <h2 data-copy-key="game.section.title"></h2>
+            <p class="section-note" data-copy-key="game.section.description"></p>
             <div class="button-grid">
-              <button id="startGameButton" type="button">Start Game</button>
-              <button id="playClueButton" type="button">Play Audio Clue</button>
-              <button id="resetScoresButton" type="button">Reset Scores</button>
+              <button id="startGameButton" type="button" data-copy-key="game.startButton"></button>
+              <button id="playClueButton" type="button" data-copy-key="game.playButton"></button>
             </div>
-            <p id="statusText" class="status">Add at least one player to begin.</p>
+            <p id="statusText" class="status" aria-live="polite"></p>
             <p id="feedbackText" class="feedback" aria-live="polite"></p>
+            <input id="languageGuessCountry" name="languageGuessCountry" type="hidden" value="" />
+            <input id="languageGuessOutcome" name="languageGuessOutcome" type="hidden" value="not_attempted" />
           </section>
-        </aside>
+
+          <section class="form-section">
+            <h2 data-copy-key="q1.title"></h2>
+            <div class="field-grid">
+              <div class="field-group">
+                <label for="q1Field1" data-copy-key="q1.field1.label"></label>
+                <input id="q1Field1" name="q1Field1" type="text" data-copy-placeholder="q1.field1.placeholder" />
+              </div>
+              <div class="field-group">
+                <label for="q1Field2" data-copy-key="q1.field2.label"></label>
+                <input id="q1Field2" name="q1Field2" type="text" data-copy-placeholder="q1.field2.placeholder" />
+              </div>
+              <div class="field-group">
+                <label for="q1Field3" data-copy-key="q1.field3.label"></label>
+                <input id="q1Field3" name="q1Field3" type="text" data-copy-placeholder="q1.field3.placeholder" />
+              </div>
+            </div>
+          </section>
+
+          <section class="form-section">
+            <h2 data-copy-key="q2.title"></h2>
+            <div class="field-grid">
+              <div class="field-group">
+                <label for="q2Field1" data-copy-key="q2.field1.label"></label>
+                <input id="q2Field1" name="q2Field1" type="text" data-copy-placeholder="q2.field1.placeholder" />
+              </div>
+              <div class="field-group">
+                <label for="q2Field2" data-copy-key="q2.field2.label"></label>
+                <input id="q2Field2" name="q2Field2" type="text" data-copy-placeholder="q2.field2.placeholder" />
+              </div>
+              <div class="field-group">
+                <label for="q2Field3" data-copy-key="q2.field3.label"></label>
+                <input id="q2Field3" name="q2Field3" type="text" data-copy-placeholder="q2.field3.placeholder" />
+              </div>
+            </div>
+          </section>
+
+          <section class="form-section">
+            <h2 data-copy-key="q3.title"></h2>
+            <div class="field-group">
+              <label for="q3Field1" data-copy-key="q3.field1.label"></label>
+              <input id="q3Field1" name="q3Field1" type="text" data-copy-placeholder="q3.field1.placeholder" />
+            </div>
+          </section>
+
+          <button id="submitFormButton" class="submit-button" type="submit" data-copy-key="form.submitButton"></button>
+        </form>
 
         <section class="map-wrap">
-          <div id="map" role="application" aria-label="World map"></div>
+          <div id="map" role="application" aria-label="World map" data-copy-aria-label="game.mapAriaLabel"></div>
         </section>
       </main>
+
+      <section class="submission-preview">
+        <h2 data-copy-key="form.preview.title"></h2>
+        <pre id="submissionOutput"></pre>
+      </section>
     </div>
 
     <script
@@ -60,4 +116,3 @@
     <script src="./app.js"></script>
   </body>
 </html>
-
