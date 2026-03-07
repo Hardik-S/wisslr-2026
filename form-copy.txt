@@ -5,7 +5,12 @@
 page.documentTitle=Wisslr Event Submission
 page.eyebrow=Wisslr
 page.title=Event Submission Form
-page.description=Complete all sections below, then submit.
+page.description=Complete each page in order.
+
+wizard.progress=Step {current} of {total}
+wizard.backButton=Back
+wizard.nextButton=Next
+wizard.feedback.completeFields=Please complete all fields on this page.
 
 form.name.title=Participant
 form.name.label=Full name
@@ -18,7 +23,7 @@ game.playButton=Play Audio Clue
 game.mapAriaLabel=World map
 game.status.waitingToStart=Start the language game when you are ready.
 game.status.playAndGuess=Play the clue and click the matching country.
-game.status.guessRecorded=Guess recorded. Continue to the remaining questions.
+game.status.guessRecorded=Guess recorded. Continue to the next page.
 game.status.mapFailed=Map data failed to load.
 game.feedback.mapLoading=Loading map data...
 game.feedback.mapReady=Map ready. Start the language game when ready.
@@ -30,30 +35,33 @@ game.feedback.gameStarted=Game started. Listen to the clue and select a country.
 game.feedback.correct=Correct. {targetCountry} selected.
 game.feedback.incorrect={countryName} is not {targetCountry}.
 
-q1.title=Question 1
-q1.field1.label=Field 1
-q1.field1.placeholder=Enter response for Question 1, Field 1
-q1.field2.label=Field 2
-q1.field2.placeholder=Enter response for Question 1, Field 2
-q1.field3.label=Field 3
-q1.field3.placeholder=Enter response for Question 1, Field 3
+q1.title=Phono Inventory - Physical Set 1
+q1.field1.label=Country
+q1.field1.placeholder=Enter country
+q1.field2.label=Language
+q1.field2.placeholder=Enter language
+q1.field3.label=Language Family
+q1.field3.placeholder=Enter language family
 
-q2.title=Question 2
-q2.field1.label=Field 1
-q2.field1.placeholder=Enter response for Question 2, Field 1
-q2.field2.label=Field 2
-q2.field2.placeholder=Enter response for Question 2, Field 2
-q2.field3.label=Field 3
-q2.field3.placeholder=Enter response for Question 2, Field 3
+q2.title=Phono Inventory - Physical Set 2
+q2.field1.label=Country
+q2.field1.placeholder=Enter country
+q2.field2.label=Language
+q2.field2.placeholder=Enter language
+q2.field3.label=Language Family
+q2.field3.placeholder=Enter language family
 
-q3.title=Final Question
-q3.field1.label=Response
-q3.field1.placeholder=Enter your final response
+q3.title=Scavenger Hunt
+q3.field1.label=Author's name of the 4th listed reference of the LAST presentation in the program sheet
+q3.field1.placeholder=Enter author name
+q3.field2.label=Which velar IPA symbol is written on page 7 of the program sheet?
+q3.field2.placeholder=Enter symbol or description
 
 form.submitButton=Submit Form
 form.preview.title=Latest Submission Preview
 form.preview.empty=No submission yet.
-form.feedback.missingName=Please enter your name before submitting.
-form.feedback.completeGuess=Please complete the language guessing game before submitting.
-form.feedback.submitted=Submission captured locally. Connect this payload to your backend endpoint.
+form.feedback.missingName=Please enter your name before continuing.
+form.feedback.completeGuess=Please complete the language guessing game before continuing.
+form.feedback.submittedAllCorrect=Submission captured. All keyed answers matched.
+form.feedback.submittedWithMismatches=Submission captured. Some keyed answers did not match.
 form.status.submitted=Submission recorded.

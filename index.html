@@ -10,7 +10,7 @@
       integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
       crossorigin=""
     />
-    <link rel="stylesheet" href="./styles.css?v=20260307a" />
+    <link rel="stylesheet" href="./styles.css?v=20260307c" />
   </head>
   <body>
     <div class="page">
@@ -20,9 +20,11 @@
         <p data-copy-key="page.description"></p>
       </header>
 
-      <main class="layout">
-        <form id="eventForm" class="panel" novalidate>
-          <section class="form-section">
+      <main class="wizard-shell">
+        <form id="eventForm" class="wizard-form" novalidate>
+          <p id="stepCounter" class="step-counter"></p>
+
+          <section class="form-step active" data-step-index="0">
             <h2 data-copy-key="form.name.title"></h2>
             <div class="field-group">
               <label for="participantName" data-copy-key="form.name.label"></label>
@@ -37,75 +39,90 @@
             </div>
           </section>
 
-          <section class="form-section">
+          <section class="form-step" data-step-index="1">
             <h2 data-copy-key="game.section.title"></h2>
             <p class="section-note" data-copy-key="game.section.description"></p>
+
             <div class="button-grid">
               <button id="startGameButton" type="button" data-copy-key="game.startButton"></button>
               <button id="playClueButton" type="button" data-copy-key="game.playButton"></button>
             </div>
+
             <p id="statusText" class="status" aria-live="polite"></p>
             <p id="feedbackText" class="feedback" aria-live="polite"></p>
+
+            <div class="map-wrap">
+              <div id="map" role="application" aria-label="World map" data-copy-aria-label="game.mapAriaLabel"></div>
+            </div>
+
             <input id="languageGuessCountry" name="languageGuessCountry" type="hidden" value="" />
             <input id="languageGuessOutcome" name="languageGuessOutcome" type="hidden" value="not_attempted" />
           </section>
 
-          <section class="form-section">
+          <section class="form-step" data-step-index="2">
             <h2 data-copy-key="q1.title"></h2>
             <div class="field-grid">
               <div class="field-group">
                 <label for="q1Field1" data-copy-key="q1.field1.label"></label>
-                <input id="q1Field1" name="q1Field1" type="text" data-copy-placeholder="q1.field1.placeholder" />
+                <input id="q1Field1" name="q1Field1" type="text" required data-copy-placeholder="q1.field1.placeholder" />
               </div>
               <div class="field-group">
                 <label for="q1Field2" data-copy-key="q1.field2.label"></label>
-                <input id="q1Field2" name="q1Field2" type="text" data-copy-placeholder="q1.field2.placeholder" />
+                <input id="q1Field2" name="q1Field2" type="text" required data-copy-placeholder="q1.field2.placeholder" />
               </div>
               <div class="field-group">
                 <label for="q1Field3" data-copy-key="q1.field3.label"></label>
-                <input id="q1Field3" name="q1Field3" type="text" data-copy-placeholder="q1.field3.placeholder" />
+                <input id="q1Field3" name="q1Field3" type="text" required data-copy-placeholder="q1.field3.placeholder" />
               </div>
             </div>
           </section>
 
-          <section class="form-section">
+          <section class="form-step" data-step-index="3">
             <h2 data-copy-key="q2.title"></h2>
             <div class="field-grid">
               <div class="field-group">
                 <label for="q2Field1" data-copy-key="q2.field1.label"></label>
-                <input id="q2Field1" name="q2Field1" type="text" data-copy-placeholder="q2.field1.placeholder" />
+                <input id="q2Field1" name="q2Field1" type="text" required data-copy-placeholder="q2.field1.placeholder" />
               </div>
               <div class="field-group">
                 <label for="q2Field2" data-copy-key="q2.field2.label"></label>
-                <input id="q2Field2" name="q2Field2" type="text" data-copy-placeholder="q2.field2.placeholder" />
+                <input id="q2Field2" name="q2Field2" type="text" required data-copy-placeholder="q2.field2.placeholder" />
               </div>
               <div class="field-group">
                 <label for="q2Field3" data-copy-key="q2.field3.label"></label>
-                <input id="q2Field3" name="q2Field3" type="text" data-copy-placeholder="q2.field3.placeholder" />
+                <input id="q2Field3" name="q2Field3" type="text" required data-copy-placeholder="q2.field3.placeholder" />
               </div>
             </div>
           </section>
 
-          <section class="form-section">
+          <section class="form-step" data-step-index="4">
             <h2 data-copy-key="q3.title"></h2>
-            <div class="field-group">
-              <label for="q3Field1" data-copy-key="q3.field1.label"></label>
-              <input id="q3Field1" name="q3Field1" type="text" data-copy-placeholder="q3.field1.placeholder" />
+            <div class="field-grid">
+              <div class="field-group">
+                <label for="q3Field1" data-copy-key="q3.field1.label"></label>
+                <input id="q3Field1" name="q3Field1" type="text" required data-copy-placeholder="q3.field1.placeholder" />
+              </div>
+              <div class="field-group">
+                <label for="q3Field2" data-copy-key="q3.field2.label"></label>
+                <input id="q3Field2" name="q3Field2" type="text" required data-copy-placeholder="q3.field2.placeholder" />
+              </div>
             </div>
           </section>
 
-          <button id="submitFormButton" class="submit-button" type="submit" data-copy-key="form.submitButton"></button>
+          <p id="formFeedback" class="feedback form-feedback" aria-live="polite"></p>
+
+          <div class="wizard-nav">
+            <button id="backStepButton" class="nav-button nav-button-secondary" type="button" data-copy-key="wizard.backButton"></button>
+            <button id="nextStepButton" class="nav-button" type="button" data-copy-key="wizard.nextButton"></button>
+            <button id="submitFormButton" class="submit-button" type="submit" data-copy-key="form.submitButton" hidden></button>
+          </div>
         </form>
 
-        <section class="map-wrap">
-          <div id="map" role="application" aria-label="World map" data-copy-aria-label="game.mapAriaLabel"></div>
+        <section id="submissionPreview" class="submission-preview" hidden>
+          <h2 data-copy-key="form.preview.title"></h2>
+          <pre id="submissionOutput"></pre>
         </section>
       </main>
-
-      <section class="submission-preview">
-        <h2 data-copy-key="form.preview.title"></h2>
-        <pre id="submissionOutput"></pre>
-      </section>
     </div>
 
     <script
@@ -113,6 +130,7 @@
       integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
       crossorigin=""
     ></script>
-    <script src="./app.js?v=20260307a"></script>
+    <script src="./app.js?v=20260307c"></script>
   </body>
 </html>
+

@@ -1,14 +1,6 @@
-WISSLR ACCEPTABLE ANSWERS TEMPLATE
+WISSLR ACCEPTABLE ANSWERS
 
-Question 1
-- Field 1 acceptable answers:
-- Field 2 acceptable answers:
-- Field 3 acceptable answers:
+This template has been populated and moved to:
+- acceptable-answers.txt
 
-Question 2
-- Field 1 acceptable answers:
-- Field 2 acceptable answers:
-- Field 3 acceptable answers:
-
-Final Question
-- Acceptable answers:
+Use that file to edit answer variants used by automatic matching.

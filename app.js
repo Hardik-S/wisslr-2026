@@ -2,12 +2,17 @@ const GEOJSON_URL = "https://raw.githubusercontent.com/johan/world.geo.json/mast
 const TARGET_COUNTRY = "India";
 const CLUE_AUDIO_SRC = "./assets/audio/kannada-10s.mp3";
 const COPY_FILE_PATH = "./form-copy.txt";
+const ANSWER_KEY_FILE_PATH = "./acceptable-answers.txt";
 
 const DEFAULT_COPY = {
   "page.documentTitle": "Wisslr Event Submission",
   "page.eyebrow": "Wisslr",
   "page.title": "Event Submission Form",
   "page.description": "Complete all sections below, then submit.",
+  "wizard.progress": "Step {current} of {total}",
+  "wizard.backButton": "Back",
+  "wizard.nextButton": "Next",
+  "wizard.feedback.completeFields": "Please complete all fields on this page.",
   "form.name.title": "Participant",
   "form.name.label": "Full name",
   "form.name.placeholder": "Enter your full name",
@@ -29,30 +34,44 @@ const DEFAULT_COPY = {
   "game.feedback.gameStarted": "Game started. Listen to the clue and select a country.",
   "game.feedback.correct": "Correct. {targetCountry} selected.",
   "game.feedback.incorrect": "{countryName} is not {targetCountry}.",
-  "q1.title": "Question 1",
-  "q1.field1.label": "Field 1",
-  "q1.field1.placeholder": "Enter response for Question 1, Field 1",
-  "q1.field2.label": "Field 2",
-  "q1.field2.placeholder": "Enter response for Question 1, Field 2",
-  "q1.field3.label": "Field 3",
-  "q1.field3.placeholder": "Enter response for Question 1, Field 3",
-  "q2.title": "Question 2",
-  "q2.field1.label": "Field 1",
-  "q2.field1.placeholder": "Enter response for Question 2, Field 1",
-  "q2.field2.label": "Field 2",
-  "q2.field2.placeholder": "Enter response for Question 2, Field 2",
-  "q2.field3.label": "Field 3",
-  "q2.field3.placeholder": "Enter response for Question 2, Field 3",
-  "q3.title": "Final Question",
-  "q3.field1.label": "Response",
-  "q3.field1.placeholder": "Enter your final response",
+  "q1.title": "Phono Inventory - Physical Set 1",
+  "q1.field1.label": "Country",
+  "q1.field1.placeholder": "Enter country",
+  "q1.field2.label": "Language",
+  "q1.field2.placeholder": "Enter language",
+  "q1.field3.label": "Language Family",
+  "q1.field3.placeholder": "Enter language family",
+  "q2.title": "Phono Inventory - Physical Set 2",
+  "q2.field1.label": "Country",
+  "q2.field1.placeholder": "Enter country",
+  "q2.field2.label": "Language",
+  "q2.field2.placeholder": "Enter language",
+  "q2.field3.label": "Language Family",
+  "q2.field3.placeholder": "Enter language family",
+  "q3.title": "Scavenger Hunt",
+  "q3.field1.label": "Author's name of the 4th listed reference of the LAST presentation in the program sheet",
+  "q3.field1.placeholder": "Enter author name",
+  "q3.field2.label": "Which velar IPA symbol is written on page 7 of the program sheet?",
+  "q3.field2.placeholder": "Enter symbol or description",
   "form.submitButton": "Submit Form",
   "form.preview.title": "Latest Submission Preview",
   "form.preview.empty": "No submission yet.",
-  "form.feedback.missingName": "Please enter your name before submitting.",
-  "form.feedback.completeGuess": "Please complete the language guessing game before submitting.",
-  "form.feedback.submitted": "Submission captured locally. Connect this payload to your backend endpoint.",
-  "form.status.submitted": "Submission recorded."
+  "form.feedback.missingName": "Please enter your name before continuing.",
+  "form.feedback.completeGuess": "Please complete the language guessing game before continuing.",
+  "form.feedback.submittedAllCorrect": "Submission captured. All keyed answers matched.",
+  "form.feedback.submittedWithMismatches": "Submission captured. Some keyed answers did not match.",
+  "form.status.submitted": "Submission recorded.",
+};
+
+const DEFAULT_ANSWER_KEY = {
+  q1Field1: ["canada", "alaska", "usa", "us", "america"],
+  q1Field2: ["tlingit", "klingkit", "lingit"],
+  q1Field3: ["na-dene", "athabaskan"],
+  q2Field1: ["usa", "hawaii", "hawai'i", "hawaiÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢i", "us", "america"],
+  q2Field2: ["olelo hawai'i", "olelo hawaii", "olelo hawaiÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢i"],
+  q2Field3: ["austronesian", "oceanic", "polynesian"],
+  q3Field1: ["alba", "alba o.", "o. alba"],
+  q3Field2: ["\u014B", "nasal"],
 };
 
 const state = {
@@ -64,39 +83,74 @@ const state = {
   countryLayer: null,
   clueAudio: null,
   copy: { ...DEFAULT_COPY },
+  answerKey: { ...DEFAULT_ANSWER_KEY },
+  currentStepIndex: 0,
 };
 
 const elements = {
   eventForm: document.getElementById("eventForm"),
+  wizardSteps: Array.from(document.querySelectorAll(".form-step")),
+  stepCounter: document.getElementById("stepCounter"),
+  backStepButton: document.getElementById("backStepButton"),
+  nextStepButton: document.getElementById("nextStepButton"),
+  submitFormButton: document.getElementById("submitFormButton"),
   participantNameInput: document.getElementById("participantName"),
   startGameButton: document.getElementById("startGameButton"),
   playClueButton: document.getElementById("playClueButton"),
   statusText: document.getElementById("statusText"),
   feedbackText: document.getElementById("feedbackText"),
+  formFeedback: document.getElementById("formFeedback"),
   languageGuessCountryInput: document.getElementById("languageGuessCountry"),
   languageGuessOutcomeInput: document.getElementById("languageGuessOutcome"),
   submissionOutput: document.getElementById("submissionOutput"),
+  submissionPreview: document.getElementById("submissionPreview"),
+  q1Field1Input: document.getElementById("q1Field1"),
+  q1Field2Input: document.getElementById("q1Field2"),
+  q1Field3Input: document.getElementById("q1Field3"),
+  q2Field1Input: document.getElementById("q2Field1"),
+  q2Field2Input: document.getElementById("q2Field2"),
+  q2Field3Input: document.getElementById("q2Field3"),
+  q3Field1Input: document.getElementById("q3Field1"),
+  q3Field2Input: document.getElementById("q3Field2"),
 };
+
 const REQUIRED_ELEMENT_KEYS = [
   "eventForm",
+  "stepCounter",
+  "backStepButton",
+  "nextStepButton",
+  "submitFormButton",
   "participantNameInput",
   "startGameButton",
   "playClueButton",
   "statusText",
   "feedbackText",
+  "formFeedback",
   "languageGuessCountryInput",
   "languageGuessOutcomeInput",
   "submissionOutput",
+  "submissionPreview",
+  "q1Field1Input",
+  "q1Field2Input",
+  "q1Field3Input",
+  "q2Field1Input",
+  "q2Field2Input",
+  "q2Field3Input",
+  "q3Field1Input",
+  "q3Field2Input",
 ];
 
 function hasRequiredElements() {
   const missing = REQUIRED_ELEMENT_KEYS.filter((key) => !elements[key]);
-  if (missing.length === 0) {
+  if (missing.length === 0 && elements.wizardSteps.length === 5) {
     return true;
   }
 
+  const missingMessage = missing.length > 0 ? `Missing expected elements: ${missing.join(", ")}. ` : "";
+  const stepsMessage = elements.wizardSteps.length === 5 ? "" : "Expected 5 wizard steps. ";
+
   console.error(
-    `Wisslr UI failed to initialize. Missing expected elements: ${missing.join(", ")}. ` +
+    `Wisslr UI failed to initialize. ${missingMessage}${stepsMessage}` +
       "Hard-refresh the page and restart the local server to clear stale assets."
   );
   return false;
@@ -126,6 +180,35 @@ function parseCopyFile(rawText) {
   return parsed;
 }
 
+function parseAnswerKeyFile(rawText) {
+  const parsed = {};
+
+  rawText.split(/\r?\n/).forEach((line) => {
+    const trimmed = line.trim();
+    if (!trimmed || trimmed.startsWith("#")) {
+      return;
+    }
+
+    const separatorIndex = trimmed.indexOf("=");
+    if (separatorIndex < 1) {
+      return;
+    }
+
+    const key = trimmed.slice(0, separatorIndex).trim();
+    const values = trimmed
+      .slice(separatorIndex + 1)
+      .split("|")
+      .map((entry) => entry.trim())
+      .filter(Boolean);
+
+    if (key && values.length > 0) {
+      parsed[key] = values;
+    }
+  });
+
+  return parsed;
+}
+
 async function loadCopy() {
   try {
     const response = await fetch(COPY_FILE_PATH);
@@ -139,6 +222,22 @@ async function loadCopy() {
   } catch (error) {
     state.copy = { ...DEFAULT_COPY };
     console.warn("Using fallback copy text.", error);
+  }
+}
+
+async function loadAnswerKey() {
+  try {
+    const response = await fetch(ANSWER_KEY_FILE_PATH);
+    if (!response.ok) {
+      throw new Error(`Answer key load failed (${response.status}).`);
+    }
+
+    const rawText = await response.text();
+    const parsed = parseAnswerKeyFile(rawText);
+    state.answerKey = { ...DEFAULT_ANSWER_KEY, ...parsed };
+  } catch (error) {
+    state.answerKey = { ...DEFAULT_ANSWER_KEY };
+    console.warn("Using fallback answer key.", error);
   }
 }
 
@@ -179,12 +278,60 @@ function applyCopyToDom() {
   });
 
   elements.submissionOutput.textContent = copyText("form.preview.empty");
+  elements.submissionPreview.hidden = true;
 }
 
 function normalizeValue(value) {
   return String(value || "")
     .trim()
     .toLowerCase();
+}
+
+function normalizeAnswer(value) {
+  return String(value || "")
+    .toLowerCase()
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^\p{L}\p{N}\s]/gu, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function setFeedbackText(text, tone = "") {
+  elements.feedbackText.textContent = text;
+  elements.feedbackText.classList.remove("win", "lose");
+  if (tone) {
+    elements.feedbackText.classList.add(tone);
+  }
+}
+
+function setFeedbackByKey(key, tone = "", variables = {}) {
+  setFeedbackText(copyText(key, variables), tone);
+}
+
+function setFormFeedback(text, tone = "") {
+  elements.formFeedback.textContent = text;
+  elements.formFeedback.classList.remove("win", "lose");
+  if (tone) {
+    elements.formFeedback.classList.add(tone);
+  }
+}
+
+function setFormFeedbackByKey(key, tone = "", variables = {}) {
+  setFormFeedback(copyText(key, variables), tone);
+}
+
+function clearFormFeedback() {
+  setFormFeedback("");
+}
+
+function setStatusByKey(key, variables = {}) {
+  elements.statusText.textContent = copyText(key, variables);
+}
+
+function syncGuessFields() {
+  elements.languageGuessCountryInput.value = state.guessCountry;
+  elements.languageGuessOutcomeInput.value = state.guessOutcome;
 }
 
 function getCountryName(feature) {
@@ -227,28 +374,7 @@ function isIndia(feature) {
   return getCountryCodes(feature).includes("ind");
 }
 
-function setFeedbackText(text, tone = "") {
-  elements.feedbackText.textContent = text;
-  elements.feedbackText.classList.remove("win", "lose");
-  if (tone) {
-    elements.feedbackText.classList.add(tone);
-  }
-}
-
-function setFeedbackByKey(key, tone = "", variables = {}) {
-  setFeedbackText(copyText(key, variables), tone);
-}
-
-function setStatusByKey(key, variables = {}) {
-  elements.statusText.textContent = copyText(key, variables);
-}
-
-function syncGuessFields() {
-  elements.languageGuessCountryInput.value = state.guessCountry;
-  elements.languageGuessOutcomeInput.value = state.guessOutcome;
-}
-
-function updateButtons() {
+function updateGameButtons() {
   elements.playClueButton.disabled = !state.started;
 }
 
@@ -288,7 +414,7 @@ function playClueAudio() {
 function startGame() {
   state.started = true;
   resetGuessRound();
-  updateButtons();
+  updateGameButtons();
   setStatusByKey("game.status.playAndGuess", { targetCountry: TARGET_COUNTRY });
   setFeedbackByKey("game.feedback.gameStarted", "");
   playClueAudio();
@@ -381,35 +507,198 @@ async function loadCountries() {
   }
 }
 
-function handleSubmit(event) {
-  event.preventDefault();
+function ensureMapInitialized() {
+  if (!state.map) {
+    createMap();
+    loadCountries();
+  }
 
-  const participantName = elements.participantNameInput.value.trim();
-  if (!participantName) {
-    setFeedbackByKey("form.feedback.missingName", "lose");
+  window.setTimeout(() => {
+    if (!state.map) {
+      return;
+    }
+
+    state.map.invalidateSize();
+    if (state.countryLayer) {
+      state.map.fitBounds(state.countryLayer.getBounds(), { padding: [12, 12] });
+    }
+  }, 120);
+}
+
+function updateStepCounter() {
+  elements.stepCounter.textContent = copyText("wizard.progress", {
+    current: state.currentStepIndex + 1,
+    total: elements.wizardSteps.length,
+  });
+}
+
+function updateNavigation() {
+  const onFirstStep = state.currentStepIndex === 0;
+  const onLastStep = state.currentStepIndex === elements.wizardSteps.length - 1;
+
+  elements.backStepButton.disabled = onFirstStep;
+  elements.nextStepButton.hidden = onLastStep;
+  elements.submitFormButton.hidden = !onLastStep;
+}
+
+function getStepFieldIds(stepIndex) {
+  const fieldMap = {
+    0: ["participantName"],
+    2: ["q1Field1", "q1Field2", "q1Field3"],
+    3: ["q2Field1", "q2Field2", "q2Field3"],
+    4: ["q3Field1", "q3Field2"],
+  };
+
+  return fieldMap[stepIndex] || [];
+}
+
+function focusFirstField(stepIndex) {
+  const step = elements.wizardSteps[stepIndex];
+  const firstInput = step?.querySelector("input:not([type='hidden'])");
+  if (firstInput && stepIndex !== 1) {
+    firstInput.focus();
+  }
+}
+
+function showStep(stepIndex) {
+  state.currentStepIndex = Math.max(0, Math.min(stepIndex, elements.wizardSteps.length - 1));
+
+  elements.wizardSteps.forEach((step, index) => {
+    step.classList.toggle("active", index === state.currentStepIndex);
+  });
+
+  updateStepCounter();
+  updateNavigation();
+  clearFormFeedback();
+
+  if (state.currentStepIndex === 1) {
+    ensureMapInitialized();
+  }
+
+  focusFirstField(state.currentStepIndex);
+}
+
+function validateRequiredFields(fieldIds) {
+  for (let index = 0; index < fieldIds.length; index += 1) {
+    const field = document.getElementById(fieldIds[index]);
+    if (field && !field.value.trim()) {
+      setFormFeedbackByKey("wizard.feedback.completeFields", "lose");
+      field.focus();
+      return false;
+    }
+  }
+
+  return true;
+}
+
+function validateStep(stepIndex) {
+  if (stepIndex === 0) {
+    if (elements.participantNameInput.value.trim()) {
+      return true;
+    }
+
+    setFormFeedbackByKey("form.feedback.missingName", "lose");
     elements.participantNameInput.focus();
+    return false;
+  }
+
+  if (stepIndex === 1) {
+    if (state.guessOutcome === "correct" || state.guessOutcome === "incorrect") {
+      return true;
+    }
+
+    setFormFeedbackByKey("form.feedback.completeGuess", "lose");
+    return false;
+  }
+
+  return validateRequiredFields(getStepFieldIds(stepIndex));
+}
+
+function nextStep() {
+  if (!validateStep(state.currentStepIndex)) {
     return;
   }
 
-  if (state.guessOutcome !== "correct" && state.guessOutcome !== "incorrect") {
-    setFeedbackByKey("form.feedback.completeGuess", "lose");
+  showStep(state.currentStepIndex + 1);
+}
+
+function previousStep() {
+  showStep(state.currentStepIndex - 1);
+}
+
+function evaluateAnswers(formData) {
+  const fieldIds = Object.keys(state.answerKey);
+  let correctCount = 0;
+  const results = {};
+
+  fieldIds.forEach((fieldId) => {
+    const submitted = String(formData.get(fieldId) || "").trim();
+    const normalizedSubmitted = normalizeAnswer(submitted);
+    const acceptedValues = state.answerKey[fieldId] || [];
+    const normalizedAccepted = acceptedValues.map((value) => normalizeAnswer(value));
+    const isCorrect = normalizedAccepted.includes(normalizedSubmitted);
+
+    if (isCorrect) {
+      correctCount += 1;
+    }
+
+    results[fieldId] = {
+      submitted,
+      correct: isCorrect,
+    };
+  });
+
+  return {
+    total: fieldIds.length,
+    correct: correctCount,
+    allCorrect: correctCount === fieldIds.length,
+    results,
+  };
+}
+
+function validateAllSteps() {
+  for (let stepIndex = 0; stepIndex < elements.wizardSteps.length; stepIndex += 1) {
+    if (!validateStep(stepIndex)) {
+      showStep(stepIndex);
+      return false;
+    }
+  }
+
+  return true;
+}
+
+function handleSubmit(event) {
+  event.preventDefault();
+
+  if (!validateAllSteps()) {
     return;
   }
 
   const formData = new FormData(elements.eventForm);
   const payload = Object.fromEntries(formData.entries());
+  const answerCheck = evaluateAnswers(formData);
+
   payload.languageGuessTarget = TARGET_COUNTRY;
   payload.submittedAt = new Date().toISOString();
+  payload.answerScore = `${answerCheck.correct}/${answerCheck.total}`;
+  payload.answersAllCorrect = answerCheck.allCorrect;
+  payload.answerCheck = answerCheck.results;
 
   elements.submissionOutput.textContent = JSON.stringify(payload, null, 2);
+  elements.submissionPreview.hidden = false;
+  elements.submissionPreview.scrollIntoView({ behavior: "smooth", block: "start" });
 
-  setFeedbackByKey("form.feedback.submitted", "win");
+  if (answerCheck.allCorrect) {
+    setFormFeedbackByKey("form.feedback.submittedAllCorrect", "win");
+  } else {
+    setFormFeedbackByKey("form.feedback.submittedWithMismatches", "lose");
+  }
+
   setStatusByKey("form.status.submitted");
 }
 
 function bindEvents() {
   elements.startGameButton.addEventListener("click", startGame);
-
   elements.playClueButton.addEventListener("click", () => {
     if (!state.started) {
       setFeedbackByKey("game.feedback.startFirst", "lose");
@@ -417,6 +706,23 @@ function bindEvents() {
     }
 
     playClueAudio();
+  });
+
+  elements.backStepButton.addEventListener("click", previousStep);
+  elements.nextStepButton.addEventListener("click", nextStep);
+
+  elements.eventForm.addEventListener("keydown", (event) => {
+    if (event.key !== "Enter" || state.currentStepIndex === elements.wizardSteps.length - 1) {
+      return;
+    }
+
+    const target = event.target;
+    if (!(target instanceof HTMLElement) || target.tagName === "TEXTAREA") {
+      return;
+    }
+
+    event.preventDefault();
+    nextStep();
   });
 
   elements.eventForm.addEventListener("submit", handleSubmit);
@@ -428,14 +734,14 @@ async function initialize() {
   }
 
   await loadCopy();
+  await loadAnswerKey();
   applyCopyToDom();
   initializeAudio();
   bindEvents();
-  updateButtons();
+  updateGameButtons();
   syncGuessFields();
   setStatusByKey("game.status.waitingToStart", { targetCountry: TARGET_COUNTRY });
-  createMap();
-  loadCountries();
+  showStep(0);
 }
 
 initialize();
