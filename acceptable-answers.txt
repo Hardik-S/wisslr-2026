@@ -1,6 +1,9 @@
 ﻿# Format: fieldId=answer1|answer2|answer3
 # Matching is non-case-sensitive and punctuation-tolerant.
 
+mapCountrySelection=india|republic of india
+mapLanguageAnswer=kannada
+
 q1Field1=canada|alaska|usa|us|america
 q1Field2=tlingit|klingkit|lingit
 q1Field3=na-dene|athabaskan

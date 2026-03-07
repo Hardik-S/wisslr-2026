@@ -1,38 +1,41 @@
 # Wisslr Event Submission Prototype
 
-Single-page form prototype for event submissions.
+Forward-only multi-page flow:
+1. Name
+2. LanguaGeo (map + language question)
+3. Phono Inventory Set 1
+4. Phono Inventory Set 2
+5. Scavenger Hunt
+6. Review submission
+7. Recent LanguaGeo map answers (last 10)
 
-## Form flow
-1. Name field
-2. Language guessing game (audio clue + map click)
-3. Phono Inventory - Physical Set 1 (3 fields)
-4. Phono Inventory - Physical Set 2 (3 fields)
-5. Scavenger Hunt (2 fields)
-
-## Editable text copy
-All user-facing form text is loaded from:
+## Editable text
+All user-facing copy is in:
 - `form-copy.txt`
 
-Update values in that file to change labels, button text, instructions, and feedback messages without editing HTML/JS.
-
 ## Answer key
-Automatic non-case-sensitive answer matching is loaded from:
+Automatic non-case-sensitive matching is in:
 - `acceptable-answers.txt`
 
 Format:
 - `fieldId=answer1|answer2|answer3`
 
+## Local records storage
+Submissions are appended to:
+- `records.txt`
+
 ## Run locally
-Serve the project root with any static server:
+Use the built-in local server (required for records saving and history map):
 
 ```powershell
 cd wisslr-2026
-npx serve .
+node server.js
 ```
 
-Then open the local URL from your terminal.
+Then open:
+- `http://127.0.0.1:3000`
 
 ## Notes
-- Language game target country is currently fixed to India.
-- Audio clue is loaded from `assets/audio/kannada-10s.mp3`.
-- Country boundaries are loaded from `johan/world.geo.json`.
+- Primary color is `#8d42f5`.
+- LanguaGeo target country is India.
+- LanguaGeo language answer is Kannada.

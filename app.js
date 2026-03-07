@@ -3,37 +3,45 @@ const TARGET_COUNTRY = "India";
 const CLUE_AUDIO_SRC = "./assets/audio/kannada-10s.mp3";
 const COPY_FILE_PATH = "./form-copy.txt";
 const ANSWER_KEY_FILE_PATH = "./acceptable-answers.txt";
+const HISTORY_LIMIT = 10;
 
 const DEFAULT_COPY = {
   "page.documentTitle": "Wisslr Event Submission",
   "page.eyebrow": "Wisslr",
   "page.title": "Event Submission Form",
-  "page.description": "Complete all sections below, then submit.",
+  "page.description":
+    "Each correct answer = 1 raffle entry.\nOnce you move onto the next page, you will NO LONGER be able to go back - so be sure of your answer before clicking \"Next\"!",
+  "page.headerImageAlt": "WUGLIFE mascot image",
   "wizard.progress": "Step {current} of {total}",
-  "wizard.backButton": "Back",
   "wizard.nextButton": "Next",
   "wizard.feedback.completeFields": "Please complete all fields on this page.",
   "form.name.title": "Participant",
   "form.name.label": "Full name",
   "form.name.placeholder": "Enter your full name",
-  "game.section.title": "Language Guessing Game",
-  "game.section.description": "Listen to the clue and click the country where the language is spoken.",
+  "game.section.title": "LanguaGeo",
+  "game.section.description": "Listen to the clue, select a country on the map, answer the language question, then submit your guess.",
   "game.startButton": "Start / Retry Guess",
   "game.playButton": "Play Audio Clue",
+  "game.submitGuessButton": "Submit LanguaGeo Guess",
+  "game.languageQuestionLabel": "What language is it?",
+  "game.languageQuestionPlaceholder": "Enter language name",
+  "game.mapCountryLabel": "Selected Country",
   "game.mapAriaLabel": "World map",
-  "game.status.waitingToStart": "Start the language game when you are ready.",
-  "game.status.playAndGuess": "Play the clue and click the matching country.",
-  "game.status.guessRecorded": "Guess recorded. Continue to the remaining questions.",
+  "game.status.waitingToStart": "Start LanguaGeo when you are ready.",
+  "game.status.countrySelected": "{countryName} selected. Submit your LanguaGeo guess when ready.",
+  "game.status.guessSubmitted": "LanguaGeo guess submitted. Click Next to continue.",
   "game.status.mapFailed": "Map data failed to load.",
   "game.feedback.mapLoading": "Loading map data...",
-  "game.feedback.mapReady": "Map ready. Start the language game when ready.",
+  "game.feedback.mapReady": "Map ready. Select a country and submit your LanguaGeo guess.",
   "game.feedback.mapError": "Could not load country shapes. Refresh after checking internet access.",
   "game.feedback.audioError": "Could not load the audio clue.",
   "game.feedback.audioBlocked": "Audio blocked by browser autoplay policy. Click Play Audio Clue.",
-  "game.feedback.startFirst": "Start the language game first.",
-  "game.feedback.gameStarted": "Game started. Listen to the clue and select a country.",
-  "game.feedback.correct": "Correct. {targetCountry} selected.",
-  "game.feedback.incorrect": "{countryName} is not {targetCountry}.",
+  "game.feedback.startFirst": "Start LanguaGeo first.",
+  "game.feedback.gameStarted": "LanguaGeo started. Select a country on the map.",
+  "game.feedback.countrySelected": "Selected: {countryName}.",
+  "game.feedback.selectCountryFirst": "Select a country on the map first.",
+  "game.feedback.languageRequired": "Answer \"What language is it?\" before submitting your LanguaGeo guess.",
+  "game.feedback.guessSaved": "LanguaGeo guess saved.",
   "q1.title": "Phono Inventory - Physical Set 1",
   "q1.field1.label": "Country",
   "q1.field1.placeholder": "Enter country",
@@ -53,101 +61,115 @@ const DEFAULT_COPY = {
   "q3.field1.placeholder": "Enter author name",
   "q3.field2.label": "Which velar IPA symbol is written on page 7 of the program sheet?",
   "q3.field2.placeholder": "Enter symbol or description",
-  "form.submitButton": "Submit Form",
-  "form.preview.title": "Latest Submission Preview",
-  "form.preview.empty": "No submission yet.",
+  "review.title": "Review Submission",
+  "review.description": "Final check before you submit. You cannot edit previous pages.",
+  "review.entriesLabel": "Raffle entries",
+  "review.scoreLabel": "Correct answers",
+  "form.submitButton": "Submit Final Answers",
   "form.feedback.missingName": "Please enter your name before continuing.",
-  "form.feedback.completeGuess": "Please complete the language guessing game before continuing.",
-  "form.feedback.submittedAllCorrect": "Submission captured. All keyed answers matched.",
-  "form.feedback.submittedWithMismatches": "Submission captured. Some keyed answers did not match.",
-  "form.status.submitted": "Submission recorded.",
+  "form.feedback.completeGuess": "Submit your LanguaGeo guess before continuing.",
+  "form.feedback.saved": "Saved. You earned {entries} raffle entrie(s).",
+  "form.feedback.saveFailed": "Could not save to records.txt. Start the local server with `node server.js` and retry.",
+  "history.title": "Recent LanguaGeo Answers",
+  "history.description": "Last 10 submissions are shown below.",
+  "history.noRecords": "No saved records yet.",
+  "history.loadFailed": "Could not load recent records.",
 };
 
 const DEFAULT_ANSWER_KEY = {
+  mapCountrySelection: ["india", "republic of india"],
+  mapLanguageAnswer: ["kannada"],
   q1Field1: ["canada", "alaska", "usa", "us", "america"],
   q1Field2: ["tlingit", "klingkit", "lingit"],
   q1Field3: ["na-dene", "athabaskan"],
-  q2Field1: ["usa", "hawaii", "hawai'i", "hawaiÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢i", "us", "america"],
-  q2Field2: ["olelo hawai'i", "olelo hawaii", "olelo hawaiÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢i"],
+  q2Field1: ["usa", "hawaii", "hawai'i", "hawai’i", "us", "america"],
+  q2Field2: ["olelo hawai'i", "olelo hawaii", "olelo hawai’i"],
   q2Field3: ["austronesian", "oceanic", "polynesian"],
   q3Field1: ["alba", "alba o.", "o. alba"],
   q3Field2: ["\u014B", "nasal"],
 };
 
+const HISTORY_COLORS = [
+  "#8d42f5",
+  "#a758ff",
+  "#6f29ca",
+  "#b679ff",
+  "#5730ad",
+  "#cf7cff",
+  "#8441de",
+  "#d95ad0",
+  "#6d55ff",
+  "#ec7ab0",
+];
+
 const state = {
   started: false,
-  canGuess: false,
-  guessOutcome: "not_attempted",
+  mapGuessSubmitted: false,
+  guessOutcome: "not_submitted",
   guessCountry: "",
+  pendingCountryFeature: null,
+  selectedCountryLayer: null,
   map: null,
   countryLayer: null,
+  historyMap: null,
+  historyLayer: null,
   clueAudio: null,
+  geojsonData: null,
   copy: { ...DEFAULT_COPY },
   answerKey: { ...DEFAULT_ANSWER_KEY },
   currentStepIndex: 0,
+  pendingSubmission: null,
 };
 
 const elements = {
   eventForm: document.getElementById("eventForm"),
   wizardSteps: Array.from(document.querySelectorAll(".form-step")),
   stepCounter: document.getElementById("stepCounter"),
-  backStepButton: document.getElementById("backStepButton"),
   nextStepButton: document.getElementById("nextStepButton"),
   submitFormButton: document.getElementById("submitFormButton"),
   participantNameInput: document.getElementById("participantName"),
   startGameButton: document.getElementById("startGameButton"),
   playClueButton: document.getElementById("playClueButton"),
+  submitMapGuessButton: document.getElementById("submitMapGuessButton"),
+  mapLanguageAnswerInput: document.getElementById("mapLanguageAnswer"),
   statusText: document.getElementById("statusText"),
   feedbackText: document.getElementById("feedbackText"),
   formFeedback: document.getElementById("formFeedback"),
-  languageGuessCountryInput: document.getElementById("languageGuessCountry"),
+  mapCountrySelectionInput: document.getElementById("mapCountrySelection"),
   languageGuessOutcomeInput: document.getElementById("languageGuessOutcome"),
-  submissionOutput: document.getElementById("submissionOutput"),
-  submissionPreview: document.getElementById("submissionPreview"),
-  q1Field1Input: document.getElementById("q1Field1"),
-  q1Field2Input: document.getElementById("q1Field2"),
-  q1Field3Input: document.getElementById("q1Field3"),
-  q2Field1Input: document.getElementById("q2Field1"),
-  q2Field2Input: document.getElementById("q2Field2"),
-  q2Field3Input: document.getElementById("q2Field3"),
-  q3Field1Input: document.getElementById("q3Field1"),
-  q3Field2Input: document.getElementById("q3Field2"),
+  reviewScoreCard: document.getElementById("reviewScoreCard"),
+  reviewSummary: document.getElementById("reviewSummary"),
+  historyLegend: document.getElementById("historyLegend"),
 };
 
 const REQUIRED_ELEMENT_KEYS = [
   "eventForm",
   "stepCounter",
-  "backStepButton",
   "nextStepButton",
   "submitFormButton",
   "participantNameInput",
   "startGameButton",
   "playClueButton",
+  "submitMapGuessButton",
+  "mapLanguageAnswerInput",
   "statusText",
   "feedbackText",
   "formFeedback",
-  "languageGuessCountryInput",
+  "mapCountrySelectionInput",
   "languageGuessOutcomeInput",
-  "submissionOutput",
-  "submissionPreview",
-  "q1Field1Input",
-  "q1Field2Input",
-  "q1Field3Input",
-  "q2Field1Input",
-  "q2Field2Input",
-  "q2Field3Input",
-  "q3Field1Input",
-  "q3Field2Input",
+  "reviewScoreCard",
+  "reviewSummary",
+  "historyLegend",
 ];
 
 function hasRequiredElements() {
   const missing = REQUIRED_ELEMENT_KEYS.filter((key) => !elements[key]);
-  if (missing.length === 0 && elements.wizardSteps.length === 5) {
+  if (missing.length === 0 && elements.wizardSteps.length === 7) {
     return true;
   }
 
   const missingMessage = missing.length > 0 ? `Missing expected elements: ${missing.join(", ")}. ` : "";
-  const stepsMessage = elements.wizardSteps.length === 5 ? "" : "Expected 5 wizard steps. ";
+  const stepsMessage = elements.wizardSteps.length === 7 ? "" : "Expected 7 wizard steps. ";
 
   console.error(
     `Wisslr UI failed to initialize. ${missingMessage}${stepsMessage}` +
@@ -277,8 +299,12 @@ function applyCopyToDom() {
     }
   });
 
-  elements.submissionOutput.textContent = copyText("form.preview.empty");
-  elements.submissionPreview.hidden = true;
+  document.querySelectorAll("[data-copy-alt]").forEach((node) => {
+    const key = node.getAttribute("data-copy-alt");
+    if (key) {
+      node.setAttribute("alt", copyText(key));
+    }
+  });
 }
 
 function normalizeValue(value) {
@@ -297,7 +323,7 @@ function normalizeAnswer(value) {
     .trim();
 }
 
-function setFeedbackText(text, tone = "") {
+function setGameFeedback(text, tone = "") {
   elements.feedbackText.textContent = text;
   elements.feedbackText.classList.remove("win", "lose");
   if (tone) {
@@ -305,8 +331,8 @@ function setFeedbackText(text, tone = "") {
   }
 }
 
-function setFeedbackByKey(key, tone = "", variables = {}) {
-  setFeedbackText(copyText(key, variables), tone);
+function setGameFeedbackByKey(key, tone = "", variables = {}) {
+  setGameFeedback(copyText(key, variables), tone);
 }
 
 function setFormFeedback(text, tone = "") {
@@ -329,9 +355,9 @@ function setStatusByKey(key, variables = {}) {
   elements.statusText.textContent = copyText(key, variables);
 }
 
-function syncGuessFields() {
-  elements.languageGuessCountryInput.value = state.guessCountry;
-  elements.languageGuessOutcomeInput.value = state.guessOutcome;
+function syncMapGuessFields() {
+  elements.mapCountrySelectionInput.value = state.mapGuessSubmitted ? state.guessCountry : "";
+  elements.languageGuessOutcomeInput.value = state.mapGuessSubmitted ? state.guessOutcome : "not_submitted";
 }
 
 function getCountryName(feature) {
@@ -378,24 +404,17 @@ function updateGameButtons() {
   elements.playClueButton.disabled = !state.started;
 }
 
-function resetGuessRound() {
-  state.canGuess = true;
-  state.guessOutcome = "in_progress";
-  state.guessCountry = "";
-  syncGuessFields();
-}
-
 function initializeAudio() {
   state.clueAudio = new Audio(CLUE_AUDIO_SRC);
   state.clueAudio.preload = "auto";
   state.clueAudio.addEventListener("error", () => {
-    setFeedbackByKey("game.feedback.audioError", "lose");
+    setGameFeedbackByKey("game.feedback.audioError", "lose");
   });
 }
 
 function playClueAudio() {
   if (!state.clueAudio) {
-    setFeedbackByKey("game.feedback.audioError", "lose");
+    setGameFeedbackByKey("game.feedback.audioError", "lose");
     return;
   }
 
@@ -405,7 +424,7 @@ function playClueAudio() {
   const playPromise = state.clueAudio.play();
   if (playPromise && typeof playPromise.catch === "function") {
     playPromise.catch((error) => {
-      setFeedbackByKey("game.feedback.audioBlocked", "lose");
+      setGameFeedbackByKey("game.feedback.audioBlocked", "lose");
       console.error(error);
     });
   }
@@ -413,114 +432,126 @@ function playClueAudio() {
 
 function startGame() {
   state.started = true;
-  resetGuessRound();
+  state.mapGuessSubmitted = false;
+  state.guessOutcome = "not_submitted";
+  state.guessCountry = "";
+  state.pendingCountryFeature = null;
+
+  if (state.selectedCountryLayer && state.countryLayer) {
+    state.countryLayer.resetStyle(state.selectedCountryLayer);
+  }
+  state.selectedCountryLayer = null;
+
+  syncMapGuessFields();
   updateGameButtons();
-  setStatusByKey("game.status.playAndGuess", { targetCountry: TARGET_COUNTRY });
-  setFeedbackByKey("game.feedback.gameStarted", "");
+  setStatusByKey("game.status.waitingToStart");
+  setGameFeedbackByKey("game.feedback.gameStarted", "");
   playClueAudio();
 }
 
-function handleCountrySelection(feature) {
+function handleCountrySelection(feature, layer) {
   if (!state.started) {
-    setFeedbackByKey("game.feedback.startFirst", "lose");
+    setGameFeedbackByKey("game.feedback.startFirst", "lose");
     return;
   }
 
-  if (!state.canGuess) {
-    return;
+  if (state.selectedCountryLayer && state.countryLayer) {
+    state.countryLayer.resetStyle(state.selectedCountryLayer);
   }
 
-  state.canGuess = false;
+  state.selectedCountryLayer = layer;
+  state.pendingCountryFeature = feature;
+  state.mapGuessSubmitted = false;
+  layer.setStyle({ fillColor: "#8d42f5", fillOpacity: 0.82, color: "#3f1a77", weight: 1.5 });
 
   const countryName = getCountryName(feature);
-  state.guessCountry = countryName;
+  setStatusByKey("game.status.countrySelected", { countryName });
+  setGameFeedbackByKey("game.feedback.countrySelected", "", { countryName });
+  syncMapGuessFields();
+}
 
-  if (isIndia(feature)) {
-    state.guessOutcome = "correct";
-    setFeedbackByKey("game.feedback.correct", "win", {
-      targetCountry: TARGET_COUNTRY,
-      countryName,
-    });
-  } else {
-    state.guessOutcome = "incorrect";
-    setFeedbackByKey("game.feedback.incorrect", "lose", {
-      targetCountry: TARGET_COUNTRY,
-      countryName,
-    });
+function submitMapGuess() {
+  if (!state.started) {
+    setGameFeedbackByKey("game.feedback.startFirst", "lose");
+    return;
   }
 
-  syncGuessFields();
-  setStatusByKey("game.status.guessRecorded", { targetCountry: TARGET_COUNTRY });
+  if (!state.pendingCountryFeature) {
+    setGameFeedbackByKey("game.feedback.selectCountryFirst", "lose");
+    return;
+  }
+
+  if (!elements.mapLanguageAnswerInput.value.trim()) {
+    setGameFeedbackByKey("game.feedback.languageRequired", "lose");
+    elements.mapLanguageAnswerInput.focus();
+    return;
+  }
+
+  state.guessCountry = getCountryName(state.pendingCountryFeature);
+  state.guessOutcome = isIndia(state.pendingCountryFeature) ? "correct" : "incorrect";
+  state.mapGuessSubmitted = true;
+  syncMapGuessFields();
+
+  setStatusByKey("game.status.guessSubmitted");
+  setGameFeedbackByKey("game.feedback.guessSaved", "");
 }
 
-function createMap() {
-  state.map = L.map("map", {
-    minZoom: 2,
-    worldCopyJump: true,
-  }).setView([20, 0], 2);
+async function ensureGeojsonData() {
+  if (state.geojsonData) {
+    return state.geojsonData;
+  }
 
-  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-    maxZoom: 7,
-  }).addTo(state.map);
+  const response = await fetch(GEOJSON_URL);
+  if (!response.ok) {
+    throw new Error(`GeoJSON load failed (${response.status}).`);
+  }
+
+  state.geojsonData = await response.json();
+  return state.geojsonData;
 }
 
-async function loadCountries() {
-  setFeedbackByKey("game.feedback.mapLoading", "");
+async function ensureGameMapInitialized() {
+  if (!state.map) {
+    state.map = L.map("map", {
+      minZoom: 2,
+      worldCopyJump: true,
+    }).setView([20, 0], 2);
 
-  try {
-    const response = await fetch(GEOJSON_URL);
-    if (!response.ok) {
-      throw new Error(`GeoJSON load failed (${response.status}).`);
-    }
-
-    const geojson = await response.json();
-
-    state.countryLayer = L.geoJSON(geojson, {
-      style: {
-        color: "#456788",
-        weight: 1,
-        fillColor: "#b2c9df",
-        fillOpacity: 0.5,
-      },
-      onEachFeature: (feature, layer) => {
-        layer.on("mouseover", () => {
-          layer.setStyle({ fillColor: "#ff6b35", fillOpacity: 0.7 });
-        });
-
-        layer.on("mouseout", () => {
-          state.countryLayer.resetStyle(layer);
-        });
-
-        layer.on("click", () => {
-          handleCountrySelection(feature);
-        });
-      },
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+      maxZoom: 7,
     }).addTo(state.map);
 
-    state.map.fitBounds(state.countryLayer.getBounds(), { padding: [12, 12] });
-    setFeedbackByKey("game.feedback.mapReady", "");
-  } catch (error) {
-    setFeedbackByKey("game.feedback.mapError", "lose");
-    setStatusByKey("game.status.mapFailed");
-    console.error(error);
-  }
-}
+    setGameFeedbackByKey("game.feedback.mapLoading", "");
 
-function ensureMapInitialized() {
-  if (!state.map) {
-    createMap();
-    loadCountries();
+    try {
+      const geojson = await ensureGeojsonData();
+      state.countryLayer = L.geoJSON(geojson, {
+        style: {
+          color: "#4d2c86",
+          weight: 1,
+          fillColor: "#d6c5f5",
+          fillOpacity: 0.58,
+        },
+        onEachFeature: (feature, layer) => {
+          layer.on("click", () => {
+            handleCountrySelection(feature, layer);
+          });
+        },
+      }).addTo(state.map);
+
+      state.map.fitBounds(state.countryLayer.getBounds(), { padding: [12, 12] });
+      setGameFeedbackByKey("game.feedback.mapReady", "");
+    } catch (error) {
+      setGameFeedbackByKey("game.feedback.mapError", "lose");
+      setStatusByKey("game.status.mapFailed");
+      console.error(error);
+    }
   }
 
   window.setTimeout(() => {
-    if (!state.map) {
-      return;
-    }
-
-    state.map.invalidateSize();
-    if (state.countryLayer) {
-      state.map.fitBounds(state.countryLayer.getBounds(), { padding: [12, 12] });
+    if (state.map) {
+      state.map.invalidateSize();
     }
   }, 120);
 }
@@ -533,12 +564,20 @@ function updateStepCounter() {
 }
 
 function updateNavigation() {
-  const onFirstStep = state.currentStepIndex === 0;
-  const onLastStep = state.currentStepIndex === elements.wizardSteps.length - 1;
+  if (state.currentStepIndex <= 4) {
+    elements.nextStepButton.hidden = false;
+    elements.submitFormButton.hidden = true;
+    return;
+  }
 
-  elements.backStepButton.disabled = onFirstStep;
-  elements.nextStepButton.hidden = onLastStep;
-  elements.submitFormButton.hidden = !onLastStep;
+  if (state.currentStepIndex === 5) {
+    elements.nextStepButton.hidden = true;
+    elements.submitFormButton.hidden = false;
+    return;
+  }
+
+  elements.nextStepButton.hidden = true;
+  elements.submitFormButton.hidden = true;
 }
 
 function getStepFieldIds(stepIndex) {
@@ -550,32 +589,6 @@ function getStepFieldIds(stepIndex) {
   };
 
   return fieldMap[stepIndex] || [];
-}
-
-function focusFirstField(stepIndex) {
-  const step = elements.wizardSteps[stepIndex];
-  const firstInput = step?.querySelector("input:not([type='hidden'])");
-  if (firstInput && stepIndex !== 1) {
-    firstInput.focus();
-  }
-}
-
-function showStep(stepIndex) {
-  state.currentStepIndex = Math.max(0, Math.min(stepIndex, elements.wizardSteps.length - 1));
-
-  elements.wizardSteps.forEach((step, index) => {
-    step.classList.toggle("active", index === state.currentStepIndex);
-  });
-
-  updateStepCounter();
-  updateNavigation();
-  clearFormFeedback();
-
-  if (state.currentStepIndex === 1) {
-    ensureMapInitialized();
-  }
-
-  focusFirstField(state.currentStepIndex);
 }
 
 function validateRequiredFields(fieldIds) {
@@ -603,7 +616,7 @@ function validateStep(stepIndex) {
   }
 
   if (stepIndex === 1) {
-    if (state.guessOutcome === "correct" || state.guessOutcome === "incorrect") {
+    if (state.mapGuessSubmitted) {
       return true;
     }
 
@@ -612,18 +625,6 @@ function validateStep(stepIndex) {
   }
 
   return validateRequiredFields(getStepFieldIds(stepIndex));
-}
-
-function nextStep() {
-  if (!validateStep(state.currentStepIndex)) {
-    return;
-  }
-
-  showStep(state.currentStepIndex + 1);
-}
-
-function previousStep() {
-  showStep(state.currentStepIndex - 1);
 }
 
 function evaluateAnswers(formData) {
@@ -656,10 +657,288 @@ function evaluateAnswers(formData) {
   };
 }
 
-function validateAllSteps() {
-  for (let stepIndex = 0; stepIndex < elements.wizardSteps.length; stepIndex += 1) {
+function buildSubmissionPayload() {
+  const formData = new FormData(elements.eventForm);
+  const answerCheck = evaluateAnswers(formData);
+  const payload = Object.fromEntries(formData.entries());
+
+  payload.languageGuessTarget = TARGET_COUNTRY;
+  payload.submittedAt = new Date().toISOString();
+  payload.answerScore = `${answerCheck.correct}/${answerCheck.total}`;
+  payload.answersAllCorrect = answerCheck.allCorrect;
+  payload.raffleEntries = answerCheck.correct;
+  payload.answerCheck = answerCheck.results;
+
+  return payload;
+}
+
+function renderReviewPage() {
+  state.pendingSubmission = buildSubmissionPayload();
+  const payload = state.pendingSubmission;
+
+  elements.reviewScoreCard.innerHTML = "";
+  const scoreMain = document.createElement("div");
+  scoreMain.className = "review-score-main";
+  scoreMain.textContent = `${copyText("review.entriesLabel")}: ${payload.raffleEntries}`;
+
+  const scoreSub = document.createElement("div");
+  scoreSub.className = "review-score-sub";
+  scoreSub.textContent = `${copyText("review.scoreLabel")}: ${payload.answerScore}`;
+
+  elements.reviewScoreCard.append(scoreMain, scoreSub);
+
+  const rows = [
+    { label: copyText("form.name.label"), value: payload.participantName, result: null },
+    {
+      label: copyText("game.mapCountryLabel"),
+      value: payload.mapCountrySelection,
+      result: payload.answerCheck.mapCountrySelection?.correct,
+    },
+    {
+      label: copyText("game.languageQuestionLabel"),
+      value: payload.mapLanguageAnswer,
+      result: payload.answerCheck.mapLanguageAnswer?.correct,
+    },
+    { label: copyText("q1.field1.label"), value: payload.q1Field1, result: payload.answerCheck.q1Field1?.correct },
+    { label: copyText("q1.field2.label"), value: payload.q1Field2, result: payload.answerCheck.q1Field2?.correct },
+    { label: copyText("q1.field3.label"), value: payload.q1Field3, result: payload.answerCheck.q1Field3?.correct },
+    { label: copyText("q2.field1.label"), value: payload.q2Field1, result: payload.answerCheck.q2Field1?.correct },
+    { label: copyText("q2.field2.label"), value: payload.q2Field2, result: payload.answerCheck.q2Field2?.correct },
+    { label: copyText("q2.field3.label"), value: payload.q2Field3, result: payload.answerCheck.q2Field3?.correct },
+    { label: copyText("q3.field1.label"), value: payload.q3Field1, result: payload.answerCheck.q3Field1?.correct },
+    { label: copyText("q3.field2.label"), value: payload.q3Field2, result: payload.answerCheck.q3Field2?.correct },
+  ];
+
+  elements.reviewSummary.innerHTML = "";
+  rows.forEach((row) => {
+    const item = document.createElement("div");
+    item.className = "review-row";
+
+    if (row.result === true) {
+      item.classList.add("correct");
+    }
+    if (row.result === false) {
+      item.classList.add("incorrect");
+    }
+
+    const label = document.createElement("div");
+    label.className = "review-label";
+    label.textContent = row.label;
+
+    const value = document.createElement("div");
+    value.className = "review-value";
+    value.textContent = row.value || "-";
+
+    item.append(label, value);
+    elements.reviewSummary.appendChild(item);
+  });
+}
+
+async function saveSubmissionRecord(payload) {
+  try {
+    const response = await fetch("/api/submissions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Save failed (${response.status})`);
+    }
+
+    return true;
+  } catch (error) {
+    console.error(error);
+    return false;
+  }
+}
+
+async function fetchRecentMapGuesses(limit = HISTORY_LIMIT) {
+  try {
+    const response = await fetch(`/api/recent-map-guesses?limit=${limit}`);
+    if (!response.ok) {
+      throw new Error(`Recent map guesses failed (${response.status})`);
+    }
+
+    const data = await response.json();
+    return Array.isArray(data.records) ? data.records : [];
+  } catch (error) {
+    console.warn(error);
+    setFormFeedbackByKey("history.loadFailed", "lose");
+    return [];
+  }
+}
+
+function renderHistoryLegend(records) {
+  elements.historyLegend.innerHTML = "";
+
+  if (!records.length) {
+    const item = document.createElement("li");
+    item.textContent = copyText("history.noRecords");
+    elements.historyLegend.appendChild(item);
+    return;
+  }
+
+  records.forEach((record, index) => {
+    const color = HISTORY_COLORS[index % HISTORY_COLORS.length];
+    const item = document.createElement("li");
+
+    const swatch = document.createElement("span");
+    swatch.className = "legend-swatch";
+    swatch.style.backgroundColor = color;
+
+    const text = document.createElement("span");
+    text.textContent = `${record.participantName || "Unknown"} - ${record.mapCountrySelection || "Unknown"}`;
+
+    item.append(swatch, text);
+    elements.historyLegend.appendChild(item);
+  });
+}
+
+async function ensureHistoryMapInitialized() {
+  if (!state.historyMap) {
+    state.historyMap = L.map("historyMap", {
+      minZoom: 2,
+      worldCopyJump: true,
+    }).setView([20, 0], 2);
+
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+      maxZoom: 7,
+    }).addTo(state.historyMap);
+  }
+
+  window.setTimeout(() => {
+    if (state.historyMap) {
+      state.historyMap.invalidateSize();
+    }
+  }, 140);
+
+  return state.historyMap;
+}
+
+async function renderHistoryMap(records) {
+  await ensureHistoryMapInitialized();
+
+  try {
+    const geojson = await ensureGeojsonData();
+    const countryColorMap = new Map();
+
+    records.forEach((record, index) => {
+      const countryName = normalizeValue(record.mapCountrySelection || "");
+      if (!countryName) {
+        return;
+      }
+
+      if (!countryColorMap.has(countryName)) {
+        countryColorMap.set(countryName, HISTORY_COLORS[index % HISTORY_COLORS.length]);
+      }
+    });
+
+    if (state.historyLayer) {
+      state.historyMap.removeLayer(state.historyLayer);
+      state.historyLayer = null;
+    }
+
+    const boundsToFit = [];
+    state.historyLayer = L.geoJSON(geojson, {
+      style: (feature) => {
+        const name = normalizeValue(getCountryName(feature));
+        const color = countryColorMap.get(name);
+
+        if (color) {
+          return {
+            color: "#2c174f",
+            weight: 1,
+            fillColor: color,
+            fillOpacity: 0.72,
+          };
+        }
+
+        return {
+          color: "#6a5895",
+          weight: 0.8,
+          fillColor: "#ddd2f8",
+          fillOpacity: 0.46,
+        };
+      },
+      onEachFeature: (feature, layer) => {
+        const name = normalizeValue(getCountryName(feature));
+        if (countryColorMap.has(name)) {
+          boundsToFit.push(layer.getBounds());
+        }
+      },
+    }).addTo(state.historyMap);
+
+    if (boundsToFit.length > 0) {
+      const merged = L.latLngBounds(boundsToFit[0]);
+      for (let index = 1; index < boundsToFit.length; index += 1) {
+        merged.extend(boundsToFit[index]);
+      }
+      state.historyMap.fitBounds(merged, { padding: [16, 16] });
+    } else {
+      state.historyMap.setView([20, 0], 2);
+    }
+  } catch (error) {
+    console.error(error);
+    setFormFeedbackByKey("history.loadFailed", "lose");
+  }
+}
+
+async function loadHistoryPage() {
+  const records = await fetchRecentMapGuesses(HISTORY_LIMIT);
+  renderHistoryLegend(records);
+  await renderHistoryMap(records);
+}
+
+function showStep(stepIndex) {
+  state.currentStepIndex = Math.max(0, Math.min(stepIndex, elements.wizardSteps.length - 1));
+
+  elements.wizardSteps.forEach((step, index) => {
+    step.classList.toggle("active", index === state.currentStepIndex);
+  });
+
+  updateStepCounter();
+  updateNavigation();
+  clearFormFeedback();
+
+  if (state.currentStepIndex === 1) {
+    ensureGameMapInitialized();
+  }
+
+  if (state.currentStepIndex === 5) {
+    renderReviewPage();
+  }
+
+  if (state.currentStepIndex === 6) {
+    loadHistoryPage();
+  }
+
+  if (state.currentStepIndex === 0) {
+    elements.participantNameInput.focus();
+  }
+
+  if (state.currentStepIndex >= 2 && state.currentStepIndex <= 4) {
+    const firstInput = elements.wizardSteps[state.currentStepIndex].querySelector("input:not([type='hidden'])");
+    if (firstInput) {
+      firstInput.focus();
+    }
+  }
+}
+
+function nextStep() {
+  if (!validateStep(state.currentStepIndex)) {
+    return;
+  }
+
+  showStep(state.currentStepIndex + 1);
+}
+
+function validateAllCoreSteps() {
+  for (let stepIndex = 0; stepIndex <= 4; stepIndex += 1) {
     if (!validateStep(stepIndex)) {
-      showStep(stepIndex);
       return false;
     }
   }
@@ -667,52 +946,46 @@ function validateAllSteps() {
   return true;
 }
 
-function handleSubmit(event) {
+async function handleSubmit(event) {
   event.preventDefault();
 
-  if (!validateAllSteps()) {
+  if (state.currentStepIndex !== 5) {
     return;
   }
 
-  const formData = new FormData(elements.eventForm);
-  const payload = Object.fromEntries(formData.entries());
-  const answerCheck = evaluateAnswers(formData);
-
-  payload.languageGuessTarget = TARGET_COUNTRY;
-  payload.submittedAt = new Date().toISOString();
-  payload.answerScore = `${answerCheck.correct}/${answerCheck.total}`;
-  payload.answersAllCorrect = answerCheck.allCorrect;
-  payload.answerCheck = answerCheck.results;
-
-  elements.submissionOutput.textContent = JSON.stringify(payload, null, 2);
-  elements.submissionPreview.hidden = false;
-  elements.submissionPreview.scrollIntoView({ behavior: "smooth", block: "start" });
-
-  if (answerCheck.allCorrect) {
-    setFormFeedbackByKey("form.feedback.submittedAllCorrect", "win");
-  } else {
-    setFormFeedbackByKey("form.feedback.submittedWithMismatches", "lose");
+  if (!validateAllCoreSteps()) {
+    return;
   }
 
-  setStatusByKey("form.status.submitted");
+  const payload = state.pendingSubmission || buildSubmissionPayload();
+  const saved = await saveSubmissionRecord(payload);
+
+  if (!saved) {
+    setFormFeedbackByKey("form.feedback.saveFailed", "lose");
+    return;
+  }
+
+  setFormFeedbackByKey("form.feedback.saved", "win", { entries: payload.raffleEntries });
+  showStep(6);
 }
 
 function bindEvents() {
   elements.startGameButton.addEventListener("click", startGame);
   elements.playClueButton.addEventListener("click", () => {
     if (!state.started) {
-      setFeedbackByKey("game.feedback.startFirst", "lose");
+      setGameFeedbackByKey("game.feedback.startFirst", "lose");
       return;
     }
 
     playClueAudio();
   });
 
-  elements.backStepButton.addEventListener("click", previousStep);
+  elements.submitMapGuessButton.addEventListener("click", submitMapGuess);
   elements.nextStepButton.addEventListener("click", nextStep);
+  elements.eventForm.addEventListener("submit", handleSubmit);
 
   elements.eventForm.addEventListener("keydown", (event) => {
-    if (event.key !== "Enter" || state.currentStepIndex === elements.wizardSteps.length - 1) {
+    if (event.key !== "Enter" || state.currentStepIndex >= 5) {
       return;
     }
 
@@ -724,8 +997,6 @@ function bindEvents() {
     event.preventDefault();
     nextStep();
   });
-
-  elements.eventForm.addEventListener("submit", handleSubmit);
 }
 
 async function initialize() {
@@ -739,8 +1010,9 @@ async function initialize() {
   initializeAudio();
   bindEvents();
   updateGameButtons();
-  syncGuessFields();
-  setStatusByKey("game.status.waitingToStart", { targetCountry: TARGET_COUNTRY });
+  syncMapGuessFields();
+  setStatusByKey("game.status.waitingToStart");
+  setGameFeedbackByKey("game.feedback.mapReady", "");
   showStep(0);
 }
 

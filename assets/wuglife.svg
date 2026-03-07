@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="220" height="220" viewBox="0 0 220 220" role="img" aria-label="WUGLIFE ghost badge">
+  <rect width="220" height="220" fill="#b9abd9"/>
+  <text x="10" y="42" font-family="Arial Black, Impact, sans-serif" font-size="54" fill="#140d24">#WUGLIFE</text>
+  <path d="M48 142c0-41 28-69 63-69 34 0 62 28 62 69v47l-16-12-12 12-13-12-13 12-13-12-13 12-13-12-13 12v-47z" fill="#9a8bc9" stroke="#39295d" stroke-width="3"/>
+  <rect x="89" y="107" width="31" height="14" fill="#0f0c18" transform="rotate(-16 89 107)"/>
+  <rect x="119" y="105" width="31" height="14" fill="#0f0c18" transform="rotate(11 119 105)"/>
+  <rect x="108" y="112" width="22" height="5" fill="#0f0c18"/>
+  <line x1="86" y1="169" x2="60" y2="206" stroke="#3c2c61" stroke-width="4"/>
+  <line x1="125" y1="169" x2="145" y2="206" stroke="#3c2c61" stroke-width="4"/>
+</svg>

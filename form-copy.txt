@@ -5,10 +5,10 @@
 page.documentTitle=Wisslr Event Submission
 page.eyebrow=Wisslr
 page.title=Event Submission Form
-page.description=Complete each page in order.
+page.description=Each correct answer = 1 raffle entry.\nOnce you move onto the next page, you will NO LONGER be able to go back - so be sure of your answer before clicking "Next"!
+page.headerImageAlt=WUGLIFE mascot image
 
 wizard.progress=Step {current} of {total}
-wizard.backButton=Back
 wizard.nextButton=Next
 wizard.feedback.completeFields=Please complete all fields on this page.
 
@@ -16,24 +16,30 @@ form.name.title=Participant
 form.name.label=Full name
 form.name.placeholder=Enter your full name
 
-game.section.title=Language Guessing Game
-game.section.description=Listen to the clue and click the country where the language is spoken.
+game.section.title=LanguaGeo
+game.section.description=Listen to the clue, select a country on the map, answer the language question, then submit your guess.
 game.startButton=Start / Retry Guess
 game.playButton=Play Audio Clue
+game.submitGuessButton=Submit LanguaGeo Guess
+game.languageQuestionLabel=What language is it?
+game.languageQuestionPlaceholder=Enter language name
+game.mapCountryLabel=Selected Country
 game.mapAriaLabel=World map
-game.status.waitingToStart=Start the language game when you are ready.
-game.status.playAndGuess=Play the clue and click the matching country.
-game.status.guessRecorded=Guess recorded. Continue to the next page.
+game.status.waitingToStart=Start LanguaGeo when you are ready.
+game.status.countrySelected={countryName} selected. Submit your LanguaGeo guess when ready.
+game.status.guessSubmitted=LanguaGeo guess submitted. Click Next to continue.
 game.status.mapFailed=Map data failed to load.
 game.feedback.mapLoading=Loading map data...
-game.feedback.mapReady=Map ready. Start the language game when ready.
+game.feedback.mapReady=Map ready. Select a country and submit your LanguaGeo guess.
 game.feedback.mapError=Could not load country shapes. Refresh after checking internet access.
 game.feedback.audioError=Could not load the audio clue.
 game.feedback.audioBlocked=Audio blocked by browser autoplay policy. Click Play Audio Clue.
-game.feedback.startFirst=Start the language game first.
-game.feedback.gameStarted=Game started. Listen to the clue and select a country.
-game.feedback.correct=Correct. {targetCountry} selected.
-game.feedback.incorrect={countryName} is not {targetCountry}.
+game.feedback.startFirst=Start LanguaGeo first.
+game.feedback.gameStarted=LanguaGeo started. Select a country on the map.
+game.feedback.countrySelected=Selected: {countryName}.
+game.feedback.selectCountryFirst=Select a country on the map first.
+game.feedback.languageRequired=Answer "What language is it?" before submitting your LanguaGeo guess.
+game.feedback.guessSaved=LanguaGeo guess saved.
 
 q1.title=Phono Inventory - Physical Set 1
 q1.field1.label=Country
@@ -57,11 +63,18 @@ q3.field1.placeholder=Enter author name
 q3.field2.label=Which velar IPA symbol is written on page 7 of the program sheet?
 q3.field2.placeholder=Enter symbol or description
 
-form.submitButton=Submit Form
-form.preview.title=Latest Submission Preview
-form.preview.empty=No submission yet.
+review.title=Review Submission
+review.description=Final check before you submit. You cannot edit previous pages.
+review.entriesLabel=Raffle entries
+review.scoreLabel=Correct answers
+
+form.submitButton=Submit Final Answers
 form.feedback.missingName=Please enter your name before continuing.
-form.feedback.completeGuess=Please complete the language guessing game before continuing.
-form.feedback.submittedAllCorrect=Submission captured. All keyed answers matched.
-form.feedback.submittedWithMismatches=Submission captured. Some keyed answers did not match.
-form.status.submitted=Submission recorded.
+form.feedback.completeGuess=Submit your LanguaGeo guess before continuing.
+form.feedback.saved=Saved. You earned {entries} raffle entrie(s).
+form.feedback.saveFailed=Could not save to records.txt. Start the local server with `node server.js` and retry.
+
+history.title=Recent LanguaGeo Answers
+history.description=Last 10 submissions are shown below.
+history.noRecords=No saved records yet.
+history.loadFailed=Could not load recent records.
