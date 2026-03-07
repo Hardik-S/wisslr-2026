@@ -77,6 +77,30 @@ const elements = {
   languageGuessOutcomeInput: document.getElementById("languageGuessOutcome"),
   submissionOutput: document.getElementById("submissionOutput"),
 };
+const REQUIRED_ELEMENT_KEYS = [
+  "eventForm",
+  "participantNameInput",
+  "startGameButton",
+  "playClueButton",
+  "statusText",
+  "feedbackText",
+  "languageGuessCountryInput",
+  "languageGuessOutcomeInput",
+  "submissionOutput",
+];
+
+function hasRequiredElements() {
+  const missing = REQUIRED_ELEMENT_KEYS.filter((key) => !elements[key]);
+  if (missing.length === 0) {
+    return true;
+  }
+
+  console.error(
+    `Wisslr UI failed to initialize. Missing expected elements: ${missing.join(", ")}. ` +
+      "Hard-refresh the page and restart the local server to clear stale assets."
+  );
+  return false;
+}
 
 function parseCopyFile(rawText) {
   const parsed = {};
@@ -399,6 +423,10 @@ function bindEvents() {
 }
 
 async function initialize() {
+  if (!hasRequiredElements()) {
+    return;
+  }
+
   await loadCopy();
   applyCopyToDom();
   initializeAudio();
