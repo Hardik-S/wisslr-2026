@@ -65,8 +65,8 @@ q3.field2.label=Which velar IPA symbol is written on page 7 of the program sheet
 q3.field2.placeholder=Enter symbol or description
 
 review.title=Review Submission
-review.description=Final check before you submit. You cannot edit previous pages.
-review.headerNote=Your raffle-entry total appears on the next page after submit.
+review.description=Submission received. You cannot edit previous pages.
+review.headerNote=Your raffle-entry total is shown below.
 
 form.submitButton=Submit Final Answers
 form.feedback.missingName=Please enter your name before continuing.

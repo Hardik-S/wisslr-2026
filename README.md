@@ -6,8 +6,7 @@ Forward-only multi-page flow:
 3. Phono Inventory Set 1
 4. Phono Inventory Set 2
 5. Scavenger Hunt
-6. Review submission
-7. Recent LanguaGeo map answers (last 10)
+6. Recent LanguaGeo map answers + review summary (auto-saved)
 
 ## Editable text
 All user-facing copy is in:

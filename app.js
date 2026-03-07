@@ -67,8 +67,8 @@ const DEFAULT_COPY = {
   "q3.field2.label": "Which velar IPA symbol is written on page 7 of the program sheet? (you may enter the symbol itself or describe it)",
   "q3.field2.placeholder": "Enter symbol or description",
   "review.title": "Review Submission",
-  "review.description": "Final check before you submit. You cannot edit previous pages.",
-  "review.headerNote": "Your raffle-entry total appears on the next page after submit.",
+  "review.description": "Submission received. You cannot edit previous pages.",
+  "review.headerNote": "Your raffle-entry total is shown below.",
 
   "form.submitButton": "Submit Final Answers",
   "form.feedback.missingName": "Please enter your name before continuing.",
@@ -100,18 +100,36 @@ const DEFAULT_STORAGE_CONFIG = {
   supabaseTable: "wisslr_submissions",
 };
 
-const HISTORY_COLORS = [
-  "#8d42f5",
-  "#a758ff",
-  "#6f29ca",
-  "#b679ff",
-  "#5730ad",
-  "#cf7cff",
-  "#8441de",
-  "#d95ad0",
-  "#6d55ff",
-  "#ec7ab0",
+const HISTORY_COLOR_PALETTE = [
+  "#e6194b", // red
+  "#3cb44b", // green
+  "#ffe119", // yellow
+  "#4363d8", // blue
+  "#f58231", // orange
+  "#911eb4", // violet
+  "#46f0f0", // cyan
+  "#f032e6", // magenta
+  "#bcf60c", // lime
+  "#fabebe", // pink
+  "#008080", // teal
+  "#e6beff", // lavender
+  "#9a6324", // brown
+  "#aaffc3", // mint
+  "#808000", // olive
+  "#ffd8b1", // apricot
+  "#000075", // navy
+  "#808080", // gray
 ];
+
+function getHistoryColor(index) {
+  if (index < HISTORY_COLOR_PALETTE.length) {
+    return HISTORY_COLOR_PALETTE[index];
+  }
+
+  // Golden-angle hue spacing keeps additional colors visually distinct.
+  const hue = Math.round((index * 137.508) % 360);
+  return `hsl(${hue} 82% 52%)`;
+}
 
 const state = {
   mapCountrySubmitted: false,
@@ -130,6 +148,7 @@ const state = {
   answerKey: { ...DEFAULT_ANSWER_KEY },
   currentStepIndex: 0,
   pendingSubmission: null,
+  finalSubmissionSaved: false,
   storageConfig: { ...DEFAULT_STORAGE_CONFIG },
 };
 const elements = {
@@ -171,12 +190,12 @@ const REQUIRED_ELEMENT_KEYS = [
 ];
 function hasRequiredElements() {
   const missing = REQUIRED_ELEMENT_KEYS.filter((key) => !elements[key]);
-  if (missing.length === 0 && elements.wizardSteps.length === 7) {
+  if (missing.length === 0 && elements.wizardSteps.length === 6) {
     return true;
   }
 
   const missingMessage = missing.length > 0 ? `Missing expected elements: ${missing.join(", ")}. ` : "";
-  const stepsMessage = elements.wizardSteps.length === 7 ? "" : "Expected 7 wizard steps. ";
+  const stepsMessage = elements.wizardSteps.length === 6 ? "" : "Expected 6 wizard steps. ";
 
   console.error(
     `Wisslr UI failed to initialize. ${missingMessage}${stepsMessage}` +
@@ -554,12 +573,6 @@ function updateNavigation() {
     return;
   }
 
-  if (state.currentStepIndex === 5) {
-    elements.nextStepButton.hidden = true;
-    elements.submitFormButton.hidden = false;
-    return;
-  }
-
   elements.nextStepButton.hidden = true;
   elements.submitFormButton.hidden = true;
 }
@@ -847,7 +860,7 @@ function renderHistoryLegend(records) {
   }
 
   records.forEach((record, index) => {
-    const color = HISTORY_COLORS[index % HISTORY_COLORS.length];
+    const color = getHistoryColor(index);
     const item = document.createElement("li");
 
     const swatch = document.createElement("span");
@@ -898,7 +911,7 @@ async function renderHistoryMap(records) {
       }
 
       if (!countryColorMap.has(countryName)) {
-        countryColorMap.set(countryName, HISTORY_COLORS[index % HISTORY_COLORS.length]);
+        countryColorMap.set(countryName, getHistoryColor(index));
       }
     });
 
@@ -958,6 +971,25 @@ async function loadHistoryPage() {
   await renderHistoryMap(records);
 }
 
+async function finalizeSubmissionForFinalStep() {
+  renderReviewPage();
+
+  const payload = state.pendingSubmission || buildSubmissionPayload();
+  if (!state.finalSubmissionSaved) {
+    const saved = await saveSubmissionRecord(payload);
+    if (!saved) {
+      setFormFeedbackByKey("form.feedback.saveFailed", "lose");
+      await loadHistoryPage();
+      return;
+    }
+
+    state.finalSubmissionSaved = true;
+  }
+
+  setFormFeedbackByKey("form.feedback.saved", "win", { entries: payload.raffleEntries });
+  await loadHistoryPage();
+}
+
 function showStep(stepIndex) {
   state.currentStepIndex = Math.max(0, Math.min(stepIndex, elements.wizardSteps.length - 1));
 
@@ -974,11 +1006,10 @@ function showStep(stepIndex) {
   }
 
   if (state.currentStepIndex === 5) {
-    renderReviewPage();
-  }
-
-  if (state.currentStepIndex === 6) {
-    loadHistoryPage();
+    finalizeSubmissionForFinalStep().catch((error) => {
+      console.error(error);
+      setFormFeedbackByKey("form.feedback.saveFailed", "lose");
+    });
   }
 
   if (state.currentStepIndex === 0) {
@@ -1011,35 +1042,10 @@ function validateAllCoreSteps() {
   return true;
 }
 
-async function handleSubmit(event) {
-  event.preventDefault();
-
-  if (state.currentStepIndex !== 5) {
-    return;
-  }
-
-  if (!validateAllCoreSteps()) {
-    return;
-  }
-
-  const payload = state.pendingSubmission || buildSubmissionPayload();
-  const saved = await saveSubmissionRecord(payload);
-
-  if (!saved) {
-    setFormFeedbackByKey("form.feedback.saveFailed", "lose");
-    return;
-  }
-
-  showStep(6);
-  setFormFeedbackByKey("form.feedback.saved", "win", { entries: payload.raffleEntries });
-}
-
 function bindEvents() {
   elements.playClueButton.addEventListener("click", playClueAudio);
   elements.submitMapGuessButton.addEventListener("click", submitMapGuess);
   elements.nextStepButton.addEventListener("click", nextStep);
-  elements.eventForm.addEventListener("submit", handleSubmit);
-
   elements.eventForm.addEventListener("keydown", (event) => {
     if (event.key !== "Enter" || state.currentStepIndex >= 5) {
       return;
