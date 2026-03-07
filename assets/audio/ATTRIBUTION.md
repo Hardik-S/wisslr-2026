@@ -1,14 +1,13 @@
 ﻿# Audio Attribution
 
-This project includes a derived Kannada speech clip:
+This project includes a derived Kannada conversation clip:
 
 - File in this repo: `kannada-10s.mp3`
-- Derived from: **"A street scrap paper vendor calling \"paper\" in a Bengaluru street.mp3"**
-- Creator: **Subhashish Panigrahi**
-- Source page: https://commons.wikimedia.org/wiki/File:A_street_scrap_paper_vendor_calling_%22paper%22_in_a_Bengaluru_street.mp3
-- Direct source file: https://upload.wikimedia.org/wikipedia/commons/6/6a/A_street_scrap_paper_vendor_calling_%22paper%22_in_a_Bengaluru_street.mp3
-- License: **Creative Commons Attribution-ShareAlike 4.0 International (CC BY-SA 4.0)**
-  - https://creativecommons.org/licenses/by-sa/4.0/
+- Derived from source audio: `123_did_you_celebrate_your_birthday_last_year.mp3`
+- Source collection page: https://nithyakannada.in/audio/
+- Source file URL: https://archive.org/download/NithyaKannada/123_did_you_celebrate_your_birthday_last_year.mp3
+- License noted by source project: **CC BY-NC-SA 4.0**
+  - https://creativecommons.org/licenses/by-nc-sa/4.0/
 
 Changes made:
-- Trimmed the original 2-minute MP3 to a ~10-second segment using `ffmpeg`.
+- Trimmed the source to a ~10-second segment using `ffmpeg`.

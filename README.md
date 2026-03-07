@@ -27,5 +27,6 @@ Then open the local URL shown in your terminal.
 5. Save and wait for the Pages URL.
 
 ## Audio attribution
-The Kannada clip is a 10-second derivative from Wikimedia Commons.
+The Kannada clip is a 10-second derivative from the Nithya Kannada audio collection.
 See `assets/audio/ATTRIBUTION.md` for source, author, and license details.
+
