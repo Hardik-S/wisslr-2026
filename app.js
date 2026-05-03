@@ -758,10 +758,24 @@ function buildStoredRecord(payload) {
   };
 }
 
+function readLocalRecordHistory() {
+  const raw = localStorage.getItem(LOCAL_STORAGE_KEY);
+  if (!raw) {
+    return [];
+  }
+
+  try {
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch (error) {
+    console.warn("Ignoring malformed local submission history.", error);
+    return [];
+  }
+}
+
 function saveRecordToLocal(record) {
   try {
-    const raw = localStorage.getItem(LOCAL_STORAGE_KEY);
-    const existing = raw ? JSON.parse(raw) : [];
+    const existing = readLocalRecordHistory();
     existing.push(record);
     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(existing));
     return true;
@@ -777,8 +791,7 @@ function getHistoryWindowStartIso() {
 
 function getLocalRecords() {
   try {
-    const raw = localStorage.getItem(LOCAL_STORAGE_KEY);
-    const existing = raw ? JSON.parse(raw) : [];
+    const existing = readLocalRecordHistory();
     const cutoffMs = Date.now() - HISTORY_WINDOW_MS;
 
     return existing
